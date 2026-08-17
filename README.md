@@ -2,7 +2,7 @@
 
 Fun, shareable NHL history stats and charts — built for YouTube videos and social posts.
 
-Live site: https://francoissavard88.github.io/NHL_FUN_STATS/
+Live site: https://nhl-fun-stats.github.io/
 
 ## Pages
 
