@@ -57,21 +57,21 @@
         </div>
       </div>
 
+      <label class="search-box card" id="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search stats… try “goals”, “scoring”, “playoffs”" autocomplete="off">
+        <button type="button" class="clear-btn" id="search-clear" aria-label="Clear search">✕</button>
+      </label>
+
       <div>
-        <div class="eyebrow" style="margin-bottom:10px;">Browse</div>
-        <div class="link-grid">
-          <a class="link-card card" href="goals-per-game.html">
-            <div class="tag">1917–2025</div>
-            <h3>Average Goals Per Game</h3>
-            <p>How scoring has swung across a century of the NHL — dead-puck era, expansion, and today's game, all on one chart.</p>
-            <div class="cta">View chart →</div>
-          </a>
-          <div class="link-card card coming-soon">
-            <div class="tag">Coming soon</div>
-            <h3>More stats on the way</h3>
-            <p>New tables and charts get added here as they're built — standings, playoffs, and more.</p>
-          </div>
+        <div class="browse-heading">
+          <div class="eyebrow" id="browse-title">Browse</div>
+          <div class="count" id="browse-count"></div>
         </div>
+        <div class="link-grid" id="link-grid"></div>
       </div>
 
       <footer class="page-footer">Data sourced from the NHL_Stats Supabase project · api-web.nhle.com</footer>
@@ -79,5 +79,62 @@
   </main>
 </div>
 
+<script src="assets/catalog.js"></script>
+<script>
+const grid = document.getElementById('link-grid');
+const input = document.getElementById('search-input');
+const searchBox = document.getElementById('search-box');
+const clearBtn = document.getElementById('search-clear');
+const browseTitle = document.getElementById('browse-title');
+const browseCount = document.getElementById('browse-count');
+
+function cardHTML(stat){
+  return `
+    <a class="link-card card" href="${stat.url}">
+      <div class="subject">${stat.subject}</div>
+      <h3>${stat.title}</h3>
+      <p>${stat.description}</p>
+      <div class="cta">View chart →</div>
+    </a>`;
+}
+
+function comingSoonHTML(){
+  return `
+    <div class="link-card card coming-soon">
+      <div class="tag">Coming soon</div>
+      <h3>More stats on the way</h3>
+      <p>New tables and charts get added here as they're built — standings, playoffs, and more.</p>
+    </div>`;
+}
+
+function matches(stat, query){
+  const haystack = [stat.title, stat.subject, ...stat.keywords].join(' ').toLowerCase();
+  return query.split(/\s+/).filter(Boolean).every(term => haystack.includes(term));
+}
+
+function render(){
+  const query = input.value.trim().toLowerCase();
+  searchBox.classList.toggle('has-query', query.length > 0);
+
+  if(!query){
+    browseTitle.textContent = 'Browse';
+    browseCount.textContent = '';
+    grid.innerHTML = STATS_CATALOG.map(cardHTML).join('') + comingSoonHTML();
+    return;
+  }
+
+  const results = STATS_CATALOG.filter(stat => matches(stat, query));
+  browseTitle.textContent = 'Search results';
+  browseCount.textContent = results.length + (results.length === 1 ? ' match' : ' matches');
+
+  grid.innerHTML = results.length
+    ? results.map(cardHTML).join('')
+    : `<div class="no-results">No stats found for “${input.value.trim()}” — try a different word, like a team, era, or topic.</div>`;
+}
+
+input.addEventListener('input', render);
+clearBtn.addEventListener('click', () => { input.value = ''; render(); input.focus(); });
+render();
+</script>
 </body>
 </html>
