@@ -588,8 +588,9 @@ function renderTeamChart(){
 
   const teams = teamIds.filter(t => byTeam.has(t));
   const PAD_L = 40, PAD_R = 10, PAD_T = 10, PAD_B = 74;
-  const SLOT = 34, BAR_W = 24;
-  const W = Math.max(canvas.parentElement.clientWidth, PAD_L + PAD_R + teams.length * SLOT);
+  const W = canvas.parentElement.clientWidth;
+  const SLOT = (W - PAD_L - PAD_R) / Math.max(1, teams.length);
+  const BAR_W = Math.max(2, SLOT * 0.7);
   const H = 340;
   canvas.width = W;
   canvas.height = H;
@@ -646,14 +647,14 @@ function renderTeamChart(){
 
     teamChartBars.push({ teamId, x, w: BAR_W, total: t.total, segments });
 
-    // x-axis label, rotated
+    // x-axis label, rotated near-vertical so narrow slots don't overlap
     ctx.save();
     ctx.translate(x + BAR_W/2, PAD_T + plotH + 6);
-    ctx.rotate(-Math.PI/3);
+    ctx.rotate(-Math.PI/2.2);
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = mutedColor;
-    ctx.font = '10px ui-monospace, monospace';
+    ctx.font = '9px ui-monospace, monospace';
     ctx.fillText(TEAM_ABBR[teamId] || ('#'+teamId), 0, 0);
     ctx.restore();
   });
