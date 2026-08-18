@@ -12,12 +12,57 @@
  *
  * @param {number} rawValue    The actual stat total for the season.
  * @param {number} gamesPlayed Games played that season (per team).
- * @param {number} [targetGames=80] Season length to normalize to.
+ * @param {number} [targetGames=82] Season length to normalize to.
  * @returns {number|null} The adjusted value, or null if gamesPlayed is falsy.
  */
-function adjustPer80(rawValue, gamesPlayed, targetGames = 80) {
+function adjustPer82(rawValue, gamesPlayed, targetGames = 82) {
   if (!gamesPlayed) return null;
   return rawValue * (targetGames / gamesPlayed);
+}
+
+/**
+ * "Goals Factor" — the site's full era-adjustment multiplier for a raw
+ * counting stat (a player's goals, points, etc.), combining three
+ * normalizations against fixed targets:
+ *   1. Scoring rate: a target of 6.0 league-wide goals/game. A season
+ *      played at 7 goals/game was an easier offensive environment, so its
+ *      raw totals get scaled down (6/7 ≈ 0.857); a low-scoring "dead puck"
+ *      season gets scaled up.
+ *   2. Season length: a target of 82 games (see adjustPer82).
+ *   3. Roster size: a target of 18 dressed players. Fewer players sharing
+ *      the ice means each one's raw total is inflated relative to an
+ *      18-man roster, so this scales it back down (and vice versa).
+ *
+ * We don't yet track average players dressed per team per season, so
+ * avgPlayersDressed defaults to the target (18) — a neutral ×1 for that
+ * term until that data exists.
+ *
+ * @param {number} leagueGoalsPerGame  League-wide goals/game that season.
+ * @param {number} gamesPlayed         Games played that season (per team).
+ * @param {number} [avgPlayersDressed=18] Average players dressed per game.
+ * @returns {number|null} The multiplier, or null if an input is falsy.
+ */
+function goalsAdjustmentFactor(leagueGoalsPerGame, gamesPlayed, avgPlayersDressed = 18) {
+  if (!leagueGoalsPerGame || !gamesPlayed || !avgPlayersDressed) return null;
+  const TARGET_GOALS_PER_GAME = 6.0;
+  const TARGET_GAMES = 82;
+  const TARGET_PLAYERS = 18;
+  return (TARGET_GOALS_PER_GAME / leagueGoalsPerGame)
+    * (TARGET_GAMES / gamesPlayed)
+    * (TARGET_PLAYERS / avgPlayersDressed);
+}
+
+/**
+ * Apply the Goals Factor to a raw counting stat.
+ * @param {number} rawValue
+ * @param {number} leagueGoalsPerGame
+ * @param {number} gamesPlayed
+ * @param {number} [avgPlayersDressed=18]
+ * @returns {number|null}
+ */
+function applyGoalsAdjustment(rawValue, leagueGoalsPerGame, gamesPlayed, avgPlayersDressed = 18) {
+  const factor = goalsAdjustmentFactor(leagueGoalsPerGame, gamesPlayed, avgPlayersDressed);
+  return factor === null ? null : rawValue * factor;
 }
 
 /**
