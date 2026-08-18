@@ -56,18 +56,33 @@
     <div class="content-with-filters">
       <aside class="filters-panel">
         <div class="filter-group">
-          <div class="filter-label">Countries</div>
+          <div class="filter-label">
+            Countries
+            <span class="filter-bulk">
+              <button type="button" class="filter-bulk-btn" data-target="countries" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="countries" data-action="uncheck">Uncheck all</button>
+            </span>
+          </div>
           <div class="filter-countries" id="filter-countries"></div>
         </div>
 
         <div class="filter-group">
-          <label class="filter-label" for="filter-round">Draft Round</label>
-          <select id="filter-round" class="filter-select"></select>
+          <div class="filter-label">
+            Team
+            <span class="filter-bulk">
+              <button type="button" class="filter-bulk-btn" data-target="teams" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="teams" data-action="uncheck">Uncheck all</button>
+            </span>
+          </div>
+          <div class="filter-countries" id="filter-teams"></div>
         </div>
 
         <div class="filter-group">
-          <label class="filter-label" for="filter-team">Team</label>
-          <select id="filter-team" class="filter-select"></select>
+          <div class="filter-label">
+            Draft Round
+            <span class="filter-bulk">
+              <button type="button" class="filter-bulk-btn" data-target="rounds" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="rounds" data-action="uncheck">Uncheck all</button>
+            </span>
+          </div>
+          <div class="filter-countries" id="filter-rounds"></div>
         </div>
 
         <div class="filter-group">
@@ -77,6 +92,16 @@
             <span>–</span>
             <input type="number" id="filter-year-max" min="1940" max="2025" value="2025">
           </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="filter-min-games">Min. Career Games</label>
+          <input type="number" id="filter-min-games" class="filter-select" min="0" step="1" value="0" placeholder="0">
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="filter-min-pts">Min. Career Points</label>
+          <input type="number" id="filter-min-pts" class="filter-select" min="0" step="1" value="0" placeholder="0">
         </div>
 
         <button class="filter-reset" id="filter-reset">Reset all filters</button>
@@ -104,6 +129,15 @@
           <p class="note">% of that season's qualifying players (5+ games) born in each country. Click a country in the filter panel to show/hide it. Hover the chart to inspect a season.</p>
           <svg class="chart" id="chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
           <div class="multi-tooltip" id="tooltip"></div>
+        </div>
+
+        <div class="card chart-card">
+          <h2>Player Origins by Club</h2>
+          <p class="note">Every NHL club, all-time roster composition (5+ GP seasons, respecting the year/round/games/points filters — not the Team checklist). 100% stacked. Hover a bar for the breakdown.</p>
+          <div class="team-chart-scroll">
+            <canvas id="team-chart" width="1600" height="340"></canvas>
+          </div>
+          <div class="multi-tooltip" id="team-tooltip"></div>
         </div>
 
         <div class="card table-card">
@@ -205,9 +239,13 @@ function flagEmoji(iso2){
 // --- state ---
 const DEFAULT_COUNTRIES = ['CAN','USA','SWE','RUS','FIN','CZE','SVK'];
 let selectedCountries = new Set(DEFAULT_COUNTRIES);
-let roundFilter = 'all';
-let teamFilter = 'all';
+const ROUND_OPTIONS = ['undrafted', 1, 2, 3, 4, 5, 6, 7, 8, 9, '10+'];
+let selectedRounds = new Set(ROUND_OPTIONS);
+const teamIds = [...new Set(SEASON_ROWS.map(r => r[1]).filter(t => t !== null))]
+  .sort((a,b) => (TEAM_NAMES[a]||'').localeCompare(TEAM_NAMES[b]||''));
+let selectedTeams = new Set(teamIds);
 let yearMin = 1940, yearMax = 2025;
+let minCareerGames = 0, minCareerPoints = 0;
 
 // --- build filter panel ---
 const countriesBox = document.getElementById('filter-countries');
@@ -225,28 +263,41 @@ countriesBox.innerHTML = orderedCountries.map(code => `
     ${flagEmoji(COUNTRY_META[code].flag)} ${COUNTRY_META[code].name}
   </label>`).join('');
 
-const roundSelect = document.getElementById('filter-round');
-const rounds = [...new Set(SEASON_ROWS.map(r => r[3]).filter(r => r !== null))].sort((a,b)=>a-b);
-roundSelect.innerHTML = '<option value="all">All Rounds</option><option value="undrafted">Undrafted</option>' +
-  rounds.map(r => `<option value="${r}">Round ${r}</option>`).join('');
+const roundsBox = document.getElementById('filter-rounds');
+function roundLabel(r){ return r === 'undrafted' ? 'Undrafted' : r === '10+' ? 'Round 10+' : `Round ${r}`; }
+roundsBox.innerHTML = ROUND_OPTIONS.map(r => `
+  <label class="filter-checkbox">
+    <input type="checkbox" data-round="${r}" checked>
+    ${roundLabel(r)}
+  </label>`).join('');
 
-const teamSelect = document.getElementById('filter-team');
-const teamIds = [...new Set(SEASON_ROWS.map(r => r[1]).filter(t => t !== null))]
-  .sort((a,b) => (TEAM_NAMES[a]||'').localeCompare(TEAM_NAMES[b]||''));
-teamSelect.innerHTML = '<option value="all">All Teams</option>' +
-  teamIds.map(t => `<option value="${t}">${TEAM_NAMES[t] || ('Team ' + t)}</option>`).join('');
+const teamsBox = document.getElementById('filter-teams');
+teamsBox.innerHTML = teamIds.map(t => `
+  <label class="filter-checkbox">
+    <input type="checkbox" data-team="${t}" checked>
+    ${TEAM_NAMES[t] || ('Team ' + t)}
+  </label>`).join('');
 
 const yearMinInput = document.getElementById('filter-year-min');
 const yearMaxInput = document.getElementById('filter-year-max');
+const minGamesInput = document.getElementById('filter-min-games');
+const minPtsInput = document.getElementById('filter-min-pts');
+
+function roundMatches(round){
+  if(round === null) return selectedRounds.has('undrafted');
+  if(round <= 9) return selectedRounds.has(round);
+  return selectedRounds.has('10+');
+}
 
 // --- filtering + aggregation ---
 function getFilteredRows(){
   return SEASON_ROWS.filter(r => {
-    const [year, team, , round] = r;
+    const [year, team, , round, carGames, carPts] = r;
     if(year < yearMin || year > yearMax) return false;
-    if(teamFilter !== 'all' && team !== Number(teamFilter)) return false;
-    if(roundFilter === 'undrafted' && round !== null) return false;
-    if(roundFilter !== 'all' && roundFilter !== 'undrafted' && round !== Number(roundFilter)) return false;
+    if(!selectedTeams.has(team)) return false;
+    if(!roundMatches(round)) return false;
+    if(minCareerGames > 0 && (carGames ?? 0) < minCareerGames) return false;
+    if(minCareerPoints > 0 && (carPts ?? 0) < minCareerPoints) return false;
     return true;
   });
 }
@@ -275,24 +326,64 @@ function computeCountryTotals(rows){
 
 // --- chart geometry ---
 const W = 900, H = 320, PAD_L = 40, PAD_R = 10, PAD_T = 14, PAD_B = 24;
-const Y_STEP = 20;
 const svg = document.getElementById('chart');
 const chartCard = document.querySelector('.chart-card');
 const tooltip = document.getElementById('tooltip');
 
 let currentYearly = [];
+let highlightedCountry = null;
+let currentYMax = 100;
+let currentYStep = 20;
+
+// Auto-zoom the Y axis to whatever the selected lines actually reach, instead of
+// always spanning the full 0-100% — a country maxing out at 40% otherwise gets
+// squeezed into less than half the chart's height.
+function computeYAxisRange(){
+  let maxVal = 0;
+  currentYearly.forEach(row => {
+    selectedCountries.forEach(code => {
+      const pct = row.total ? (row.byCountry[code]||0) / row.total * 100 : 0;
+      if(pct > maxVal) maxVal = pct;
+    });
+  });
+  if(maxVal <= 0){ currentYMax = 20; currentYStep = 5; return; }
+  const padded = maxVal * 1.15;
+  const niceSteps = [1,2,5,10,20,25,50];
+  let step = niceSteps[niceSteps.length-1];
+  for(const s of niceSteps){
+    if(padded / s <= 6){ step = s; break; }
+  }
+  currentYMax = Math.min(100, Math.ceil(padded / step) * step);
+  currentYStep = step;
+}
 
 function xPos(yr){ return PAD_L + (yr - yearMin) / Math.max(1, (yearMax - yearMin)) * (W - PAD_L - PAD_R); }
-function yPos(v){ return H - PAD_B - v / 100 * (H - PAD_T - PAD_B); }
+function yPos(v){ return H - PAD_B - v / currentYMax * (H - PAD_T - PAD_B); }
+
+// Catmull-Rom -> cubic Bezier smoothing, so lines read as smooth curves instead of sharp zig-zags.
+function smoothPath(points){
+  if(points.length < 3){
+    return points.map((p,i) => (i===0?'M':'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
+  }
+  let d = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)} `;
+  for(let i=0; i<points.length-1; i++){
+    const p0 = points[i-1] || points[i];
+    const p1 = points[i];
+    const p2 = points[i+1];
+    const p3 = points[i+2] || p2;
+    const cp1x = p1.x + (p2.x - p0.x)/6, cp1y = p1.y + (p2.y - p0.y)/6;
+    const cp2x = p2.x - (p3.x - p1.x)/6, cp2y = p2.y - (p3.y - p1.y)/6;
+    d += `C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)} `;
+  }
+  return d;
+}
 
 function buildPath(code){
-  let d = '';
-  currentYearly.forEach((row,i)=>{
+  const points = currentYearly.map(row => {
     const pct = row.total ? (row.byCountry[code]||0) / row.total * 100 : 0;
-    const x = xPos(row.year), y = yPos(pct);
-    d += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    return { x: xPos(row.year), y: yPos(pct) };
   });
-  return d;
+  return smoothPath(points);
 }
 
 function nearestYear(yearEstimate){
@@ -350,16 +441,38 @@ function attachHoverHandlers(){
     tooltip.style.opacity = 0;
   }
 
+  function handleClick(e){
+    if(!currentYearly.length) return;
+    const rect = svg.getBoundingClientRect();
+    const svgX = (e.clientX - rect.left) / rect.width * W;
+    const svgY = (e.clientY - rect.top) / rect.height * H;
+    const yearEstimate = yearMin + (svgX - PAD_L) / (W - PAD_L - PAD_R) * (yearMax - yearMin);
+    const row = nearestYear(Math.max(yearMin, Math.min(yearMax, yearEstimate)));
+    if(!row) return;
+    let closest = null, bestDist = Infinity;
+    selectedCountries.forEach(code => {
+      const pct = row.total ? (row.byCountry[code]||0)/row.total*100 : 0;
+      const dist = Math.abs(yPos(pct) - svgY);
+      if(dist < bestDist){ bestDist = dist; closest = code; }
+    });
+    if(closest){
+      highlightedCountry = (highlightedCountry === closest) ? null : closest;
+      renderChart();
+    }
+  }
+
   overlay.addEventListener('pointermove', e => updateHover(e.clientX));
   overlay.addEventListener('pointerleave', clearHover);
+  overlay.addEventListener('click', handleClick);
 }
 
 function renderChart(){
+  computeYAxisRange();
   const gridLines = [];
-  for(let v=0; v<=100; v+=Y_STEP){
+  for(let v=0; v<=currentYMax + 0.001; v+=currentYStep){
     const y = yPos(v);
     gridLines.push(`<line class="chart-axis" x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}"/>`);
-    gridLines.push(`<text class="chart-axis-label" x="${PAD_L-8}" y="${y+3}" text-anchor="end">${v}%</text>`);
+    gridLines.push(`<text class="chart-axis-label" x="${PAD_L-8}" y="${y+3}" text-anchor="end">${Math.round(v)}%</text>`);
   }
   const span = yearMax - yearMin;
   const step = span > 60 ? 20 : span > 30 ? 10 : span > 12 ? 5 : 1;
@@ -372,9 +485,11 @@ function renderChart(){
     return;
   }
 
-  const lines = [...selectedCountries].map(code =>
-    `<path class="series-line" d="${buildPath(code)}" fill="none" stroke="${COLOR_MAP[code]}" stroke-width="2" opacity="0.9"/>`
-  ).join('');
+  const lines = [...selectedCountries].map(code => {
+    const dimmed = highlightedCountry && highlightedCountry !== code;
+    const isHighlighted = highlightedCountry === code;
+    return `<path class="series-line" d="${buildPath(code)}" fill="none" stroke="${COLOR_MAP[code]}" stroke-width="${isHighlighted ? 3 : 2}" opacity="${dimmed ? 0.12 : 0.95}"/>`;
+  }).join('');
 
   svg.innerHTML = `
     ${gridLines.join('')}
@@ -441,6 +556,134 @@ document.querySelectorAll('#data-table thead th').forEach(th=>{
   });
 });
 
+// --- team composition chart (canvas, 100% stacked) ---
+const TEAM_ABBR = {1:"NJD",2:"NYI",3:"NYR",4:"PHI",5:"PIT",6:"BOS",7:"BUF",8:"MTL",9:"OTT",10:"TOR",11:"ATL",12:"CAR",13:"FLA",14:"TBL",15:"WSH",16:"CHI",17:"DET",18:"NSH",19:"STL",20:"CGY",21:"COL",22:"EDM",23:"VAN",24:"ANA",25:"DAL",26:"LAK",27:"PHX",28:"SJS",29:"CBJ",30:"MIN",31:"MNS",32:"QUE",33:"WIN",34:"HFD",35:"CLR",44:"NYA",46:"OAK",47:"AFM",48:"KCS",49:"CLE",51:"BRK",52:"WPG",53:"ARI",54:"VGK",55:"SEA",56:"CGS",59:"UTA",68:"UTA"};
+const OTHER_COLOR = '#8a97a3';
+
+function getRowsForTeamChart(){
+  return SEASON_ROWS.filter(r => {
+    const [year, , , round, carGames, carPts] = r;
+    if(year < yearMin || year > yearMax) return false;
+    if(!roundMatches(round)) return false;
+    if(minCareerGames > 0 && (carGames ?? 0) < minCareerGames) return false;
+    if(minCareerPoints > 0 && (carPts ?? 0) < minCareerPoints) return false;
+    return true;
+  });
+}
+
+let teamChartBars = [];
+
+function renderTeamChart(){
+  const canvas = document.getElementById('team-chart');
+  const ctx = canvas.getContext('2d');
+  const rows = getRowsForTeamChart();
+
+  const byTeam = new Map();
+  rows.forEach(([, team, country]) => {
+    if(!byTeam.has(team)) byTeam.set(team, {total:0, byCountry:{}});
+    const t = byTeam.get(team);
+    t.total++;
+    t.byCountry[country] = (t.byCountry[country]||0)+1;
+  });
+
+  const teams = teamIds.filter(t => byTeam.has(t));
+  const PAD_L = 40, PAD_R = 10, PAD_T = 10, PAD_B = 74;
+  const SLOT = 34, BAR_W = 24;
+  const W = Math.max(canvas.parentElement.clientWidth, PAD_L + PAD_R + teams.length * SLOT);
+  const H = 340;
+  canvas.width = W;
+  canvas.height = H;
+  const plotH = H - PAD_T - PAD_B;
+
+  ctx.clearRect(0,0,W,H);
+  const styles = getComputedStyle(document.documentElement);
+  const borderColor = styles.getPropertyValue('--border').trim();
+  const mutedColor = styles.getPropertyValue('--text-muted').trim();
+
+  // gridlines
+  ctx.strokeStyle = borderColor;
+  ctx.fillStyle = mutedColor;
+  ctx.font = '10px ui-monospace, monospace';
+  ctx.lineWidth = 1;
+  [0,20,40,60,80,100].forEach(v => {
+    const y = PAD_T + plotH - (v/100)*plotH;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, y+0.5);
+    ctx.lineTo(W-PAD_R, y+0.5);
+    ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(v+'%', PAD_L-8, y);
+  });
+
+  teamChartBars = [];
+  const activeCountries = [...selectedCountries];
+
+  teams.forEach((teamId, i) => {
+    const t = byTeam.get(teamId);
+    const x = PAD_L + i*SLOT + (SLOT-BAR_W)/2;
+    let yCursor = PAD_T + plotH;
+    const segments = [];
+
+    activeCountries.forEach(code => {
+      const n = t.byCountry[code] || 0;
+      const frac = t.total ? n / t.total : 0;
+      const segH = frac * plotH;
+      const yTop = yCursor - segH;
+      ctx.fillStyle = COLOR_MAP[code];
+      ctx.fillRect(x, yTop, BAR_W, segH);
+      segments.push({code, name: COUNTRY_META[code].name, n, pct: frac*100, color: COLOR_MAP[code]});
+      yCursor = yTop;
+    });
+
+    const selectedTotal = activeCountries.reduce((s,c) => s + (t.byCountry[c]||0), 0);
+    const otherN = t.total - selectedTotal;
+    const otherFrac = t.total ? otherN / t.total : 0;
+    const otherH = otherFrac * plotH;
+    ctx.fillStyle = OTHER_COLOR;
+    ctx.fillRect(x, yCursor - otherH, BAR_W, otherH);
+    segments.push({code:'OTHER', name:'Other', n: otherN, pct: otherFrac*100, color: OTHER_COLOR});
+
+    teamChartBars.push({ teamId, x, w: BAR_W, total: t.total, segments });
+
+    // x-axis label, rotated
+    ctx.save();
+    ctx.translate(x + BAR_W/2, PAD_T + plotH + 6);
+    ctx.rotate(-Math.PI/3);
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = mutedColor;
+    ctx.font = '10px ui-monospace, monospace';
+    ctx.fillText(TEAM_ABBR[teamId] || ('#'+teamId), 0, 0);
+    ctx.restore();
+  });
+}
+
+function attachTeamChartHover(){
+  const canvas = document.getElementById('team-chart');
+  const tooltip = document.getElementById('team-tooltip');
+  const card = canvas.closest('.chart-card');
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const bar = teamChartBars.find(b => mx >= b.x && mx <= b.x + b.w);
+    if(!bar){ tooltip.style.opacity = 0; return; }
+
+    const cardRect = card.getBoundingClientRect();
+    tooltip.style.left = (rect.left - cardRect.left + (bar.x + bar.w/2) / scaleX) + 'px';
+    tooltip.style.top = (rect.top - cardRect.top + (e.clientY - rect.top) - 10) + 'px';
+    tooltip.style.opacity = 1;
+    tooltip.innerHTML = `<div class="tt-year">${TEAM_NAMES[bar.teamId] || bar.teamId} &nbsp; (n=${bar.total})</div>` +
+      bar.segments.filter(s => s.n > 0).map(s =>
+        `<div class="tt-row"><span class="tt-swatch" style="background:${s.color}"></span>${s.name}<span class="tt-val">${s.pct.toFixed(1)}%</span></div>`
+      ).join('');
+  });
+  canvas.addEventListener('mouseleave', () => { tooltip.style.opacity = 0; });
+}
+attachTeamChartHover();
+
 // --- main recompute ---
 function recompute(){
   const rows = getFilteredRows();
@@ -454,6 +697,7 @@ function recompute(){
   renderStats(rows, currentYearly, countryTotals);
   renderChart();
   renderTable();
+  renderTeamChart();
 }
 
 // --- filter event wiring ---
@@ -462,11 +706,25 @@ countriesBox.addEventListener('change', e => {
   if(!cb.matches('input[type="checkbox"]')) return;
   const code = cb.dataset.code;
   if(cb.checked) selectedCountries.add(code); else selectedCountries.delete(code);
+  highlightedCountry = null;
   renderChart();
   renderStats(getFilteredRows(), currentYearly, computeCountryTotals(getFilteredRows()));
+  renderTeamChart();
 });
-roundSelect.addEventListener('change', () => { roundFilter = roundSelect.value; recompute(); });
-teamSelect.addEventListener('change', () => { teamFilter = teamSelect.value; recompute(); });
+roundsBox.addEventListener('change', e => {
+  const cb = e.target;
+  if(!cb.matches('input[type="checkbox"]')) return;
+  const key = cb.dataset.round === 'undrafted' || cb.dataset.round === '10+' ? cb.dataset.round : Number(cb.dataset.round);
+  if(cb.checked) selectedRounds.add(key); else selectedRounds.delete(key);
+  recompute();
+});
+teamsBox.addEventListener('change', e => {
+  const cb = e.target;
+  if(!cb.matches('input[type="checkbox"]')) return;
+  const id = Number(cb.dataset.team);
+  if(cb.checked) selectedTeams.add(id); else selectedTeams.delete(id);
+  recompute();
+});
 yearMinInput.addEventListener('change', () => {
   yearMin = Math.max(1940, Math.min(2025, Number(yearMinInput.value) || 1940));
   if(yearMin > yearMax) yearMin = yearMax;
@@ -479,14 +737,54 @@ yearMaxInput.addEventListener('change', () => {
   yearMaxInput.value = yearMax;
   recompute();
 });
+minGamesInput.addEventListener('change', () => {
+  minCareerGames = Math.max(0, Number(minGamesInput.value) || 0);
+  minGamesInput.value = minCareerGames;
+  recompute();
+});
+minPtsInput.addEventListener('change', () => {
+  minCareerPoints = Math.max(0, Number(minPtsInput.value) || 0);
+  minPtsInput.value = minCareerPoints;
+  recompute();
+});
+
+document.querySelectorAll('.filter-bulk-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.target;
+    const check = btn.dataset.action === 'check';
+    if(target === 'countries'){
+      selectedCountries = check ? new Set(orderedCountries) : new Set();
+      countriesBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = check);
+      highlightedCountry = null;
+      renderChart();
+      renderStats(getFilteredRows(), currentYearly, computeCountryTotals(getFilteredRows()));
+      renderTeamChart();
+    } else if(target === 'rounds'){
+      selectedRounds = check ? new Set(ROUND_OPTIONS) : new Set();
+      roundsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = check);
+      recompute();
+    } else if(target === 'teams'){
+      selectedTeams = check ? new Set(teamIds) : new Set();
+      teamsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = check);
+      recompute();
+    }
+  });
+});
+
 document.getElementById('filter-reset').addEventListener('click', () => {
   selectedCountries = new Set(DEFAULT_COUNTRIES);
-  roundFilter = 'all'; teamFilter = 'all'; yearMin = 1940; yearMax = 2025;
-  roundSelect.value = 'all'; teamSelect.value = 'all';
+  selectedRounds = new Set(ROUND_OPTIONS);
+  selectedTeams = new Set(teamIds);
+  highlightedCountry = null;
+  yearMin = 1940; yearMax = 2025;
   yearMinInput.value = 1940; yearMaxInput.value = 2025;
+  minCareerGames = 0; minCareerPoints = 0;
+  minGamesInput.value = 0; minPtsInput.value = 0;
   countriesBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
     cb.checked = selectedCountries.has(cb.dataset.code);
   });
+  roundsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+  teamsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
   recompute();
 });
 
