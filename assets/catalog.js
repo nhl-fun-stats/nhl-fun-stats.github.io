@@ -9,5 +9,13 @@ const STATS_CATALOG = [
     description: "How scoring has swung since 1940 — dead-puck era, expansion, and today's game, compared against the long-run average.",
     tag: "1940–2025",
     url: "goals-per-game.html"
+  },
+  {
+    title: "Players by Country",
+    subject: "Players",
+    keywords: ["players", "country", "nationality", "origin", "canada", "usa", "sweden", "russia", "finland", "czechia", "slovakia", "international", "europe", "birthplace"],
+    description: "Where NHL players have come from, year by year, since 1917 — Canada's shrinking share and the rise of Sweden, Russia, and the Czech/Slovak pipeline.",
+    tag: "1917–2025",
+    url: "players-by-country.html"
   }
 ];

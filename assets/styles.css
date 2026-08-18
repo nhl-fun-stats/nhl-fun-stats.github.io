@@ -289,6 +289,73 @@ svg.chart{ width:100%; height:auto; display:block; overflow: visible; touch-acti
 .hover-dot{ fill:var(--surface); stroke:var(--accent); stroke-width:2.5; opacity:0; }
 .overlay{ fill:transparent; cursor:crosshair; }
 
+/* ---------- multi-series chart legend ---------- */
+.chart-legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:14px;
+}
+.legend-chip{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 11px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--text);
+  cursor:pointer;
+  user-select:none;
+  transition: opacity .15s ease, border-color .15s ease;
+}
+.legend-chip .swatch{
+  width:10px; height:10px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.legend-chip.off{
+  opacity:0.4;
+}
+.legend-chip:hover{ border-color:var(--accent); }
+.multi-tooltip{
+  position:absolute;
+  pointer-events:none;
+  background:var(--text);
+  color:var(--bg);
+  font-size:12px;
+  line-height:1.5;
+  padding:9px 12px;
+  border-radius:8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  opacity:0;
+  transform:translate(-50%,-100%);
+  transition:opacity 0.1s ease;
+  white-space:nowrap;
+  z-index:10;
+}
+.multi-tooltip .tt-year{
+  font-weight:700;
+  margin-bottom:4px;
+  font-family: ui-monospace, monospace;
+}
+.multi-tooltip .tt-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.multi-tooltip .tt-swatch{
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+}
+.multi-tooltip .tt-val{
+  margin-left:auto;
+  font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  padding-left:10px;
+}
+
 .tooltip{
   position:absolute;
   pointer-events:none;
