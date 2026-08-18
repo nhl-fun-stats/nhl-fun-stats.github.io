@@ -58,6 +58,15 @@
 
       <div class="stat-row" id="stat-row"></div>
 
+      <div class="card notes-card">
+        <div class="notes-label">📝 Notes</div>
+        <ul class="notes-body">
+          <li>The historic 50-goals-in-50-games season of Maurice Richard was achieved in the outlier year of 1943-44. It was a great season, but he had a nice tailwind — league-wide scoring that year (8.17 goals/game) was the highest since 1919-20, well above the post-1940 average.</li>
+          <li>We can clearly see which eras were hurt and which ones clearly benefitted from the swings in goals per game.</li>
+          <li>The 2005-06 season saw a nice jump in goals after the lockout, but the next year it went back down — and it took 16 years to see another season with a better goals frequency.</li>
+        </ul>
+      </div>
+
       <div class="card chart-card">
         <h2>Average Goals Per Game Over Time</h2>
         <p class="note">Unlike a total-goals count, this average is comparable across eras — it doesn't depend on how many teams were in the league. Hover the chart to inspect a season.</p>
@@ -85,17 +94,18 @@
         </div>
       </div>
 
-      <div class="card notes-card">
-        <div class="notes-label">📝 Notes from the site owner</div>
-        <ul class="notes-body">
-          <li>The historic 50-goals-in-50-games season of Maurice Richard was achieved in the outlier year of 1943-44. It was a great season, but he had a nice tailwind — league-wide scoring that year (8.17 goals/game) was the highest since 1919-20, well above the post-1940 average.</li>
-          <li>We can clearly see which eras were hurt and which ones clearly benefitted from the swings in goals per game.</li>
-          <li>The 2005-06 season saw a nice jump in goals after the lockout, but the next year it went back down — and it took 16 years to see another season with a better goals frequency.</li>
-        </ul>
-      </div>
-
       <div class="card comments-card">
-        <h2>Comments</h2>
+        <h2>React</h2>
+        <p class="note">Quick reaction, no sign-in needed.</p>
+        <div class="reactions" id="reactions">
+          <button class="reaction-btn" data-key="like"><span class="emoji">👍</span><span class="count">–</span></button>
+          <button class="reaction-btn" data-key="fire"><span class="emoji">🔥</span><span class="count">–</span></button>
+          <button class="reaction-btn" data-key="wow"><span class="emoji">😮</span><span class="count">–</span></button>
+          <button class="reaction-btn" data-key="heart"><span class="emoji">❤️</span><span class="count">–</span></button>
+          <button class="reaction-btn" data-key="laugh"><span class="emoji">😂</span><span class="count">–</span></button>
+        </div>
+
+        <h2 style="margin-top:20px;">Comments</h2>
         <p class="note">Sign in with GitHub to leave a comment or reaction.</p>
         <div class="giscus"></div>
         <script src="https://giscus.app/client.js"
@@ -115,7 +125,10 @@
         </script>
       </div>
 
-      <footer class="page-footer">Source: api-web.nhle.com (NHL) · regular season only · 2004-05 missing (lockout) · 2026-27 excluded (not yet played)</footer>
+      <footer class="page-footer">
+        Source: api-web.nhle.com (NHL) · regular season only · 2004-05 missing (lockout) · 2026-27 excluded (not yet played)
+        <div class="page-views"><img src="https://hits.sh/nhl-fun-stats.github.io/goals-per-game.html.svg?style=flat-square&label=page%20views&color=1d6fa5" alt="page views"></div>
+      </footer>
     </div>
   </main>
 </div>
@@ -284,6 +297,52 @@ function clearHover(){
 
 overlay.addEventListener('pointermove', e => updateHover(e.clientX, e.clientY));
 overlay.addEventListener('pointerleave', clearHover);
+
+// --- reactions (no sign-in required) ---
+const REACTION_NAMESPACE = 'nhl-fun-stats-github-io';
+const REACTION_PAGE = 'goals-per-game';
+
+function reactionStorageKey(key){ return `reacted-${REACTION_PAGE}-${key}`; }
+
+function setReactionCount(key, value){
+  const el = document.querySelector(`.reaction-btn[data-key="${key}"] .count`);
+  if(el) el.textContent = value;
+}
+
+async function loadReactionCounts(){
+  document.querySelectorAll('.reaction-btn').forEach(async (btn) => {
+    const key = btn.dataset.key;
+    if(localStorage.getItem(reactionStorageKey(key))) btn.classList.add('reacted');
+    try{
+      const res = await fetch(`https://abacus.jasoncameron.dev/get/${REACTION_NAMESPACE}/${REACTION_PAGE}-${key}`);
+      const data = await res.json();
+      setReactionCount(key, data.value ?? 0);
+    }catch(err){
+      setReactionCount(key, 0);
+    }
+  });
+}
+
+async function sendReaction(key){
+  const btn = document.querySelector(`.reaction-btn[data-key="${key}"]`);
+  if(localStorage.getItem(reactionStorageKey(key))) return;
+  localStorage.setItem(reactionStorageKey(key), '1');
+  btn.classList.add('reacted');
+  try{
+    const res = await fetch(`https://abacus.jasoncameron.dev/hit/${REACTION_NAMESPACE}/${REACTION_PAGE}-${key}`);
+    const data = await res.json();
+    setReactionCount(key, data.value);
+  }catch(err){
+    const el = btn.querySelector('.count');
+    const current = parseInt(el.textContent, 10) || 0;
+    setReactionCount(key, current + 1);
+  }
+}
+
+document.querySelectorAll('.reaction-btn').forEach(btn => {
+  btn.addEventListener('click', () => sendReaction(btn.dataset.key));
+});
+loadReactionCounts();
 </script>
 </body>
 </html>

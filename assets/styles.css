@@ -377,6 +377,16 @@ footer.page-footer{
   text-align:center;
   padding-top:8px;
 }
+.page-views{
+  display:flex;
+  justify-content:center;
+  margin-top:10px;
+}
+.page-views img{
+  height:18px;
+  vertical-align:middle;
+  border-radius:4px;
+}
 
 /* ---------- notes (owner commentary) ---------- */
 .notes-card{
@@ -417,6 +427,39 @@ ul.notes-body li::marker{ color:var(--accent); }
 .comments-card{ padding:20px 22px; }
 .comments-card h2{ font-size:15px; margin:0 0 2px; font-weight:700; }
 .comments-card .note{ font-size:12.5px; color:var(--text-muted); margin:0 0 14px; }
+
+/* ---------- reactions (no sign-in) ---------- */
+.reactions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.reaction-btn{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:8px 14px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:var(--surface);
+  color:var(--text);
+  font-family:inherit;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition: border-color .15s ease, background .15s ease, transform .1s ease;
+}
+.reaction-btn:hover{ border-color:var(--accent); }
+.reaction-btn:active{ transform:scale(0.96); }
+.reaction-btn.reacted{
+  border-color:var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color:var(--accent);
+  cursor:default;
+}
+.reaction-btn .emoji{ font-size:17px; line-height:1; }
+.reaction-btn .count{ font-variant-numeric:tabular-nums; min-width:1ch; color:var(--text-muted); }
+.reaction-btn.reacted .count{ color:var(--accent); }
 
 /* ---------- nav divider ---------- */
 .nav-divider{
