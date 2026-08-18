@@ -133,7 +133,7 @@
 
         <div class="card chart-card">
           <h2>Player Origins by Club</h2>
-          <p class="note">Every NHL club, all-time roster composition (5+ GP seasons, respecting the year/round/games/points filters — not the Team checklist). 100% stacked. Hover a bar for the breakdown.</p>
+          <p class="note">Roster composition by club (5+ GP seasons), reflecting every filter on the left. 100% stacked. Hover a bar for the breakdown.</p>
           <div class="team-chart-scroll">
             <canvas id="team-chart" width="1600" height="340"></canvas>
           </div>
@@ -560,23 +560,12 @@ document.querySelectorAll('#data-table thead th').forEach(th=>{
 const TEAM_ABBR = {1:"NJD",2:"NYI",3:"NYR",4:"PHI",5:"PIT",6:"BOS",7:"BUF",8:"MTL",9:"OTT",10:"TOR",11:"ATL",12:"CAR",13:"FLA",14:"TBL",15:"WSH",16:"CHI",17:"DET",18:"NSH",19:"STL",20:"CGY",21:"COL",22:"EDM",23:"VAN",24:"ANA",25:"DAL",26:"LAK",27:"PHX",28:"SJS",29:"CBJ",30:"MIN",31:"MNS",32:"QUE",33:"WIN",34:"HFD",35:"CLR",44:"NYA",46:"OAK",47:"AFM",48:"KCS",49:"CLE",51:"BRK",52:"WPG",53:"ARI",54:"VGK",55:"SEA",56:"CGS",59:"UTA",68:"UTA"};
 const OTHER_COLOR = '#8a97a3';
 
-function getRowsForTeamChart(){
-  return SEASON_ROWS.filter(r => {
-    const [year, , , round, carGames, carPts] = r;
-    if(year < yearMin || year > yearMax) return false;
-    if(!roundMatches(round)) return false;
-    if(minCareerGames > 0 && (carGames ?? 0) < minCareerGames) return false;
-    if(minCareerPoints > 0 && (carPts ?? 0) < minCareerPoints) return false;
-    return true;
-  });
-}
-
 let teamChartBars = [];
 
 function renderTeamChart(){
   const canvas = document.getElementById('team-chart');
   const ctx = canvas.getContext('2d');
-  const rows = getRowsForTeamChart();
+  const rows = getFilteredRows();
 
   const byTeam = new Map();
   rows.forEach(([, team, country]) => {
