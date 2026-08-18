@@ -417,17 +417,17 @@ footer.page-footer{
   background:transparent;
   color:var(--text);
   font-family:inherit;
-  font-size:14px;
+  font-size:22px;
   font-weight:500;
-  padding:0 4px 0 14px;
+  padding:16px 6px 16px 20px;
 }
 .search-box input::placeholder{ color:var(--text-muted); }
 .search-box .clear-btn{
   border:none;
   background:transparent;
   color:var(--text-muted);
-  width:28px;
-  font-size:13px;
+  width:38px;
+  font-size:18px;
   line-height:1;
   cursor:pointer;
   display:none;
@@ -440,7 +440,7 @@ footer.page-footer{
   border:none;
   background:var(--accent);
   color:#fff;
-  width:42px;
+  width:64px;
   flex-shrink:0;
   display:flex;
   align-items:center;
@@ -448,7 +448,7 @@ footer.page-footer{
   cursor:pointer;
 }
 .search-box .search-submit:hover{ background:var(--accent-strong); }
-.search-box .search-submit svg{ width:16px; height:16px; }
+.search-box .search-submit svg{ width:24px; height:24px; }
 
 .browse-heading{
   display:flex;
