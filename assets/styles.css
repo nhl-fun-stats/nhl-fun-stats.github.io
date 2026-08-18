@@ -405,6 +405,13 @@ footer.page-footer{
   color:var(--text-muted);
   font-style:italic;
 }
+ul.notes-body{
+  padding-left:20px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+ul.notes-body li::marker{ color:var(--accent); }
 
 /* ---------- comments (giscus) ---------- */
 .comments-card{ padding:20px 22px; }
