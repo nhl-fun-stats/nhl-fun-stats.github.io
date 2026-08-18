@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Average Goals Per Game — NHL Fun Stats</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥅</text></svg>">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <a class="sidebar-logo" href="index.html">
+      <svg viewBox="0 0 100 110" aria-hidden="true">
+        <path d="M50 4 L92 18 V52 C92 82 74 100 50 108 C26 100 8 82 8 52 V18 Z" fill="var(--surface)" stroke="var(--accent)" stroke-width="4"/>
+        <g stroke="var(--accent)" stroke-width="7" stroke-linecap="round">
+          <line x1="28" y1="28" x2="72" y2="76"/>
+          <line x1="72" y1="28" x2="28" y2="76"/>
+        </g>
+        <circle cx="50" cy="60" r="12" fill="var(--text)"/>
+        <path d="M22 88 C36 96 64 96 78 88" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+      </svg>
+      <span class="wordmark">
+        <span class="nhl">NHL</span>
+        <span class="sub">Fun Stats</span>
+      </span>
+    </a>
+
+    <nav class="sidebar-nav">
+      <div class="nav-heading">Stats</div>
+      <a href="index.html"><span class="dot"></span>Home</a>
+      <a href="goals-per-game.html" aria-current="page"><span class="dot"></span>Goals Per Game</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      Fun, shareable NHL history stats — built for video &amp; social.
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page">
+      <header class="page-header">
+        <div class="eyebrow">NHL Fun Stats</div>
+        <h1>Average Goals Per Game, 1917–2025</h1>
+        <p class="subtitle">Average goals scored per game (both teams combined), NHL regular season, across each of the 108 seasons played since 1917-18. Data: team_season_standings (Supabase).</p>
+      </header>
+
+      <div class="stat-row" id="stat-row"></div>
+
+      <div class="card chart-card">
+        <h2>Average Goals Per Game Over Time</h2>
+        <p class="note">Unlike a total-goals count, this average is comparable across eras — it doesn't depend on how many teams were in the league. Hover the chart to inspect a season.</p>
+        <svg class="chart" id="chart" viewBox="0 0 900 300" preserveAspectRatio="none"></svg>
+        <div class="tooltip" id="tooltip"></div>
+      </div>
+
+      <div class="card table-card">
+        <h2>Season Detail</h2>
+        <p class="note">Click a header to sort.</p>
+        <div class="table-scroll">
+          <table id="data-table">
+            <thead>
+              <tr>
+                <th data-key="year" data-type="num">Season</th>
+                <th data-key="goals_per_game" data-type="num">Goals/Game</th>
+                <th data-key="total_goals" data-type="num">Total Goals</th>
+                <th data-key="nb_teams" data-type="num">Teams</th>
+                <th data-key="games_played" data-type="num">Games/Team</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <footer class="page-footer">Source: api-web.nhle.com (NHL) · regular season only · 2004-05 missing (lockout) · 2026-27 excluded (not yet played)</footer>
+    </div>
+  </main>
+</div>
+
+<script>
+const DATA = [
+{"year":1917,"total_goals":344,"nb_teams":4,"games_played":22},{"year":1918,"total_goals":223,"nb_teams":3,"games_played":18},{"year":1919,"total_goals":460,"nb_teams":4,"games_played":24},{"year":1920,"total_goals":406,"nb_teams":4,"games_played":24},{"year":1921,"total_goals":380,"nb_teams":4,"games_played":24},{"year":1922,"total_goals":313,"nb_teams":4,"games_played":24},{"year":1923,"total_goals":255,"nb_teams":4,"games_played":24},{"year":1924,"total_goals":450,"nb_teams":6,"games_played":30},{"year":1925,"total_goals":581,"nb_teams":7,"games_played":36},{"year":1926,"total_goals":879,"nb_teams":10,"games_played":44},{"year":1927,"total_goals":836,"nb_teams":10,"games_played":44},{"year":1928,"total_goals":642,"nb_teams":10,"games_played":44},{"year":1929,"total_goals":1301,"nb_teams":10,"games_played":44},{"year":1930,"total_goals":1054,"nb_teams":10,"games_played":44},{"year":1931,"total_goals":957,"nb_teams":8,"games_played":48},{"year":1932,"total_goals":983,"nb_teams":9,"games_played":48},{"year":1933,"total_goals":1041,"nb_teams":9,"games_played":48},{"year":1934,"total_goals":1087,"nb_teams":9,"games_played":48},{"year":1935,"total_goals":831,"nb_teams":8,"games_played":48},{"year":1936,"total_goals":946,"nb_teams":8,"games_played":48},{"year":1937,"total_goals":972,"nb_teams":8,"games_played":48},{"year":1938,"total_goals":851,"nb_teams":7,"games_played":48},{"year":1939,"total_goals":838,"nb_teams":7,"games_played":48},{"year":1940,"total_goals":900,"nb_teams":7,"games_played":48},{"year":1941,"total_goals":1047,"nb_teams":7,"games_played":48},{"year":1942,"total_goals":1083,"nb_teams":6,"games_played":50},{"year":1943,"total_goals":1225,"nb_teams":6,"games_played":50},{"year":1944,"total_goals":1103,"nb_teams":6,"games_played":50},{"year":1945,"total_goals":1003,"nb_teams":6,"games_played":50},{"year":1946,"total_goals":1138,"nb_teams":6,"games_played":60},{"year":1947,"total_goals":1054,"nb_teams":6,"games_played":60},{"year":1948,"total_goals":978,"nb_teams":6,"games_played":60},{"year":1949,"total_goals":1148,"nb_teams":6,"games_played":70},{"year":1950,"total_goals":1139,"nb_teams":6,"games_played":70},{"year":1951,"total_goals":1090,"nb_teams":6,"games_played":70},{"year":1952,"total_goals":1006,"nb_teams":6,"games_played":70},{"year":1953,"total_goals":1009,"nb_teams":6,"games_played":70},{"year":1954,"total_goals":1059,"nb_teams":6,"games_played":70},{"year":1955,"total_goals":1064,"nb_teams":6,"games_played":70},{"year":1956,"total_goals":1130,"nb_teams":6,"games_played":70},{"year":1957,"total_goals":1175,"nb_teams":6,"games_played":70},{"year":1958,"total_goals":1217,"nb_teams":6,"games_played":70},{"year":1959,"total_goals":1238,"nb_teams":6,"games_played":70},{"year":1960,"total_goals":1261,"nb_teams":6,"games_played":70},{"year":1961,"total_goals":1264,"nb_teams":6,"games_played":70},{"year":1962,"total_goals":1249,"nb_teams":6,"games_played":70},{"year":1963,"total_goals":1166,"nb_teams":6,"games_played":70},{"year":1964,"total_goals":1208,"nb_teams":6,"games_played":70},{"year":1965,"total_goals":1277,"nb_teams":6,"games_played":70},{"year":1966,"total_goals":1252,"nb_teams":6,"games_played":70},{"year":1967,"total_goals":2476,"nb_teams":12,"games_played":74},{"year":1968,"total_goals":2718,"nb_teams":12,"games_played":76},{"year":1969,"total_goals":2649,"nb_teams":12,"games_played":76},{"year":1970,"total_goals":3409,"nb_teams":14,"games_played":78},{"year":1971,"total_goals":3348,"nb_teams":14,"games_played":78},{"year":1972,"total_goals":4088,"nb_teams":16,"games_played":78},{"year":1973,"total_goals":3989,"nb_teams":16,"games_played":78},{"year":1974,"total_goals":4932,"nb_teams":18,"games_played":80},{"year":1975,"total_goals":4913,"nb_teams":18,"games_played":80},{"year":1976,"total_goals":4783,"nb_teams":18,"games_played":80},{"year":1977,"total_goals":4747,"nb_teams":18,"games_played":80},{"year":1978,"total_goals":4757,"nb_teams":17,"games_played":80},{"year":1979,"total_goals":5902,"nb_teams":21,"games_played":80},{"year":1980,"total_goals":6457,"nb_teams":21,"games_played":80},{"year":1981,"total_goals":6741,"nb_teams":21,"games_played":80},{"year":1982,"total_goals":6493,"nb_teams":21,"games_played":80},{"year":1983,"total_goals":6627,"nb_teams":21,"games_played":80},{"year":1984,"total_goals":6530,"nb_teams":21,"games_played":80},{"year":1985,"total_goals":6667,"nb_teams":21,"games_played":80},{"year":1986,"total_goals":6165,"nb_teams":21,"games_played":80},{"year":1987,"total_goals":6237,"nb_teams":21,"games_played":80},{"year":1988,"total_goals":6286,"nb_teams":21,"games_played":80},{"year":1989,"total_goals":6189,"nb_teams":21,"games_played":80},{"year":1990,"total_goals":5805,"nb_teams":21,"games_played":80},{"year":1991,"total_goals":6123,"nb_teams":22,"games_played":80},{"year":1992,"total_goals":7311,"nb_teams":24,"games_played":84},{"year":1993,"total_goals":7081,"nb_teams":26,"games_played":84},{"year":1994,"total_goals":3727,"nb_teams":26,"games_played":48},{"year":1995,"total_goals":6701,"nb_teams":26,"games_played":82},{"year":1996,"total_goals":6216,"nb_teams":26,"games_played":82},{"year":1997,"total_goals":5624,"nb_teams":26,"games_played":82},{"year":1998,"total_goals":5830,"nb_teams":27,"games_played":82},{"year":1999,"total_goals":6306,"nb_teams":28,"games_played":82},{"year":2000,"total_goals":6782,"nb_teams":30,"games_played":82},{"year":2001,"total_goals":6442,"nb_teams":30,"games_played":82},{"year":2002,"total_goals":6530,"nb_teams":30,"games_played":82},{"year":2003,"total_goals":6318,"nb_teams":30,"games_played":82},{"year":2005,"total_goals":7588,"nb_teams":30,"games_played":82},{"year":2006,"total_goals":7246,"nb_teams":30,"games_played":82},{"year":2007,"total_goals":6847,"nb_teams":30,"games_played":82},{"year":2008,"total_goals":7165,"nb_teams":30,"games_played":82},{"year":2009,"total_goals":6987,"nb_teams":30,"games_played":82},{"year":2010,"total_goals":6870,"nb_teams":30,"games_played":82},{"year":2011,"total_goals":6726,"nb_teams":30,"games_played":82},{"year":2012,"total_goals":3919,"nb_teams":30,"games_played":48},{"year":2013,"total_goals":6751,"nb_teams":30,"games_played":82},{"year":2014,"total_goals":6719,"nb_teams":30,"games_played":82},{"year":2015,"total_goals":6672,"nb_teams":30,"games_played":82},{"year":2016,"total_goals":6803,"nb_teams":30,"games_played":82},{"year":2017,"total_goals":7552,"nb_teams":31,"games_played":82},{"year":2018,"total_goals":7664,"nb_teams":31,"games_played":82},{"year":2019,"total_goals":6534,"nb_teams":31,"games_played":71},{"year":2020,"total_goals":5096,"nb_teams":31,"games_played":56},{"year":2021,"total_goals":8252,"nb_teams":32,"games_played":82},{"year":2022,"total_goals":8343,"nb_teams":32,"games_played":82},{"year":2023,"total_goals":8168,"nb_teams":32,"games_played":82},{"year":2024,"total_goals":7978,"nb_teams":32,"games_played":82},{"year":2025,"total_goals":8205,"nb_teams":32,"games_played":82}
+].map(d => ({...d, goals_per_game: +(d.total_goals / (d.nb_teams * d.games_played / 2)).toFixed(2)}));
+
+function seasonLabel(y){ return y + '-' + String(y+1).slice(-2); }
+
+// --- stat row ---
+const statRow = document.getElementById('stat-row');
+const maxRow = DATA.reduce((a,b)=> b.goals_per_game>a.goals_per_game?b:a);
+const minRow = DATA.reduce((a,b)=> b.goals_per_game<a.goals_per_game?b:a);
+const latest = DATA[DATA.length-1];
+const stats = [
+  {label:'Most Recent Season', value:latest.goals_per_game.toFixed(2), small:seasonLabel(latest.year)},
+  {label:'All-Time High', value:maxRow.goals_per_game.toFixed(2), small:seasonLabel(maxRow.year)},
+  {label:'All-Time Low', value:minRow.goals_per_game.toFixed(2), small:seasonLabel(minRow.year)},
+  {label:'Seasons Covered', value:DATA.length, small:'1917–2025'},
+];
+statRow.innerHTML = stats.map(s => `
+  <div class="stat">
+    <div class="label">${s.label}</div>
+    <div class="value">${s.value}<small>${s.small}</small></div>
+  </div>`).join('');
+
+// --- chart ---
+const W = 900, H = 300, PAD_L = 44, PAD_R = 10, PAD_T = 14, PAD_B = 24;
+const xs = DATA.map(d=>d.year);
+const ys = DATA.map(d=>d.goals_per_game);
+const xMin = Math.min(...xs), xMax = Math.max(...xs);
+const Y_STEP = 2;
+const yMin = 0;
+const yMax = Math.ceil((Math.max(...ys) * 1.08) / Y_STEP) * Y_STEP;
+const xPos = yr => PAD_L + (yr - xMin) / (xMax - xMin) * (W - PAD_L - PAD_R);
+const yPos = v => H - PAD_B - (v - yMin) / (yMax - yMin) * (H - PAD_T - PAD_B);
+
+let path = '';
+DATA.forEach((d,i)=>{
+  const x = xPos(d.year), y = yPos(d.goals_per_game);
+  path += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+});
+const area = 'M' + xPos(DATA[0].year).toFixed(1) + ',' + yPos(0).toFixed(1) + ' ' +
+  path.slice(1) +
+  'L' + xPos(DATA[DATA.length-1].year).toFixed(1) + ',' + yPos(0).toFixed(1) + ' Z';
+
+const gridLines = [];
+for(let v=0; v<=yMax; v+=Y_STEP){
+  const y = yPos(v);
+  gridLines.push(`<line class="chart-axis" x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}"/>`);
+  gridLines.push(`<text class="chart-axis-label" x="${PAD_L-8}" y="${y+3}" text-anchor="end">${v}</text>`);
+}
+const xTicks = [1920,1940,1960,1980,2000,2020];
+xTicks.forEach(yr=>{
+  gridLines.push(`<text class="chart-axis-label" x="${xPos(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
+});
+
+const peak = maxRow;
+const peakX = xPos(peak.year), peakY = yPos(peak.goals_per_game);
+
+const svg = document.getElementById('chart');
+svg.innerHTML = `
+  ${gridLines.join('')}
+  <path class="chart-area" d="${area}"/>
+  <path class="chart-line" d="${path}"/>
+  <g class="chart-peak">
+    <circle cx="${peakX}" cy="${peakY}" r="3.5"/>
+    <text x="${peakX}" y="${peakY-10}" text-anchor="middle">${peak.goals_per_game.toFixed(2)}</text>
+  </g>
+  <line class="hover-line" id="hover-line" x1="0" y1="${PAD_T}" x2="0" y2="${H-PAD_B}"/>
+  <circle class="hover-dot" id="hover-dot" r="4.5" cx="0" cy="0"/>
+  <rect class="overlay" id="overlay" x="${PAD_L}" y="0" width="${W-PAD_L-PAD_R}" height="${H}"/>
+`;
+
+// --- table ---
+const tbody = document.getElementById('table-body');
+function render(rows){
+  tbody.innerHTML = rows.map(d => `
+    <tr data-year="${d.year}">
+      <td>${seasonLabel(d.year)}</td>
+      <td>${d.goals_per_game.toFixed(2)}</td>
+      <td>${d.total_goals.toLocaleString('en-US')}</td>
+      <td>${d.nb_teams}</td>
+      <td>${d.games_played}</td>
+    </tr>`).join('');
+}
+render(DATA);
+
+let sortKey = 'year', sortDir = -1;
+document.querySelectorAll('thead th').forEach(th=>{
+  th.innerHTML += '<span class="arrow">▲</span>';
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    sortDir = (sortKey === key) ? -sortDir : 1;
+    sortKey = key;
+    document.querySelectorAll('thead th').forEach(t=>t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    th.querySelector('.arrow').textContent = sortDir === 1 ? '▲' : '▼';
+    const sorted = [...DATA].sort((a,b)=> (a[sortKey]-b[sortKey]) * sortDir);
+    render(sorted);
+  });
+});
+
+// --- hover highlight ---
+const overlay = document.getElementById('overlay');
+const hoverLine = document.getElementById('hover-line');
+const hoverDot = document.getElementById('hover-dot');
+const tooltip = document.getElementById('tooltip');
+const chartCard = document.querySelector('.chart-card');
+
+function nearestPoint(yearEstimate){
+  let best = DATA[0], bestDist = Infinity;
+  for(const d of DATA){
+    const dist = Math.abs(d.year - yearEstimate);
+    if(dist < bestDist){ bestDist = dist; best = d; }
+  }
+  return best;
+}
+
+function updateHover(clientX, clientY){
+  const rect = svg.getBoundingClientRect();
+  const svgX = (clientX - rect.left) / rect.width * W;
+  const yearEstimate = xMin + (svgX - PAD_L) / (W - PAD_L - PAD_R) * (xMax - xMin);
+  const clamped = Math.max(xMin, Math.min(xMax, yearEstimate));
+  const d = nearestPoint(clamped);
+
+  const px = xPos(d.year), py = yPos(d.goals_per_game);
+  hoverLine.setAttribute('x1', px);
+  hoverLine.setAttribute('x2', px);
+  hoverLine.style.opacity = 1;
+  hoverDot.setAttribute('cx', px);
+  hoverDot.setAttribute('cy', py);
+  hoverDot.style.opacity = 1;
+
+  const cardRect = chartCard.getBoundingClientRect();
+  const tipX = rect.left - cardRect.left + (px / W) * rect.width;
+  const tipY = rect.top - cardRect.top + (py / H) * rect.height;
+  tooltip.style.left = tipX + 'px';
+  tooltip.style.top = (tipY - 10) + 'px';
+  tooltip.style.opacity = 1;
+  tooltip.innerHTML = `${seasonLabel(d.year)} &nbsp; <strong>${d.goals_per_game.toFixed(2)}</strong> goals/game`;
+
+  document.querySelectorAll('#table-body tr').forEach(tr=>{
+    tr.classList.toggle('highlight', Number(tr.dataset.year) === d.year);
+  });
+}
+
+function clearHover(){
+  hoverLine.style.opacity = 0;
+  hoverDot.style.opacity = 0;
+  tooltip.style.opacity = 0;
+  document.querySelectorAll('#table-body tr.highlight').forEach(tr=>tr.classList.remove('highlight'));
+}
+
+overlay.addEventListener('pointermove', e => updateHover(e.clientX, e.clientY));
+overlay.addEventListener('pointerleave', clearHover);
+</script>
+</body>
+</html>
