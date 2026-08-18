@@ -59,14 +59,16 @@
 
       <div class="search-section">
         <div class="eyebrow" style="margin-bottom:8px;">I want stats about ...</div>
-        <label class="search-box card" id="search-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="7"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
+        <div class="search-box" id="search-box">
           <input type="text" id="search-input" placeholder="goals, scoring, playoffs…" autocomplete="off">
           <button type="button" class="clear-btn" id="search-clear" aria-label="Clear search">✕</button>
-        </label>
+          <button type="button" class="search-submit" id="search-submit" aria-label="Search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div>
@@ -137,6 +139,8 @@ function render(){
 
 input.addEventListener('input', render);
 clearBtn.addEventListener('click', () => { input.value = ''; render(); input.focus(); });
+document.getElementById('search-submit').addEventListener('click', () => { render(); input.focus(); });
+input.addEventListener('keydown', e => { if(e.key === 'Enter') render(); });
 render();
 </script>
 </body>
