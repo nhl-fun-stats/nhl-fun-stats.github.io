@@ -142,7 +142,7 @@ for(let v=0; v<=yMax; v+=Y_STEP){
   gridLines.push(`<line class="chart-axis" x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}"/>`);
   gridLines.push(`<text class="chart-axis-label" x="${PAD_L-8}" y="${y+3}" text-anchor="end">${v}</text>`);
 }
-const xTicks = [1920,1940,1960,1980,2000,2020];
+const xTicks = [1940,1960,1980,2000,2020];
 xTicks.forEach(yr=>{
   gridLines.push(`<text class="chart-axis-label" x="${xPos(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
 });
