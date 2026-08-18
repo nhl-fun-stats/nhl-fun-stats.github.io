@@ -97,13 +97,28 @@ nav.sidebar-nav{
   gap:3px;
 }
 nav.sidebar-nav .nav-heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
   font-size:10.5px;
   font-weight:700;
   letter-spacing:0.12em;
   text-transform:uppercase;
   color:var(--text-muted);
   padding:0 12px;
-  margin-bottom:6px;
+  margin:14px 0 6px;
+}
+.soon-pill{
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  background:var(--surface-alt);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:2px 7px;
 }
 nav.sidebar-nav a{
   display:flex;
@@ -164,8 +179,14 @@ nav.sidebar-nav a .dot{
   .sidebar-logo svg{ width:38px; height:38px; }
   .sidebar-logo .wordmark .nhl{ font-size:15px; }
   .sidebar-logo .wordmark .sub{ font-size:9px; }
-  nav.sidebar-nav{ flex-direction:row; gap:4px; overflow-x:auto; }
-  nav.sidebar-nav .nav-heading{ display:none; }
+  nav.sidebar-nav{ flex-direction:row; gap:4px; overflow-x:auto; align-items:center; }
+  nav.sidebar-nav a{ white-space:nowrap; flex-shrink:0; }
+  nav.sidebar-nav .nav-heading{
+    margin:0;
+    padding:9px 10px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
   .sidebar-footer{ display:none; }
   .main{ padding:28px 18px 60px; }
 }
@@ -261,6 +282,8 @@ svg.chart{ width:100%; height:auto; display:block; overflow: visible; touch-acti
 .chart-axis-label{ fill:var(--text-muted); font-size:10px; font-family: ui-monospace, monospace; }
 .chart-peak circle{ fill:var(--accent-strong); }
 .chart-peak text{ fill:var(--accent-strong); font-weight:700; font-size:11px; font-family: ui-monospace, monospace; }
+.avg-line{ stroke:var(--accent-strong); stroke-width:1.5; stroke-dasharray:5,4; }
+.avg-line-label{ fill:var(--accent-strong); font-weight:700; font-size:10.5px; font-family: ui-monospace, monospace; }
 .hover-line{ stroke:var(--text-muted); stroke-width:1; stroke-dasharray:3,3; opacity:0; }
 .hover-dot{ fill:var(--surface); stroke:var(--accent); stroke-width:2.5; opacity:0; }
 .overlay{ fill:transparent; cursor:crosshair; }
@@ -345,6 +368,8 @@ tbody td:first-child{
   font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
   font-weight:600;
 }
+td.vs-above{ color:var(--accent); font-weight:700; }
+td.vs-below{ color:var(--text-muted); }
 
 footer.page-footer{
   font-size:12px;

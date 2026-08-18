@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Average Goals Per Game — NHL Fun Stats</title>
+<title>Average Goals Per Game by Year — NHL Fun Stats</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥅</text></svg>">
 <link rel="stylesheet" href="assets/styles.css">
 </head>
@@ -28,9 +28,15 @@
     </a>
 
     <nav class="sidebar-nav">
-      <div class="nav-heading">Stats</div>
       <a href="index.html"><span class="dot"></span>Home</a>
-      <a href="goals-per-game.html" aria-current="page"><span class="dot"></span>Goals Per Game</a>
+
+      <div class="nav-heading">Seasons</div>
+      <a href="goals-per-game.html" aria-current="page"><span class="dot"></span>Avg Goals Per Game by Year</a>
+
+      <div class="nav-heading">Playoffs<span class="soon-pill">Soon</span></div>
+      <div class="nav-heading">Players<span class="soon-pill">Soon</span></div>
+      <div class="nav-heading">Teams<span class="soon-pill">Soon</span></div>
+      <div class="nav-heading">Drafts<span class="soon-pill">Soon</span></div>
     </nav>
 
     <div class="sidebar-footer">
@@ -41,9 +47,9 @@
   <main class="main">
     <div class="page">
       <header class="page-header">
-        <div class="eyebrow">NHL Fun Stats</div>
-        <h1>Average Goals Per Game, 1917–2025</h1>
-        <p class="subtitle">Average goals scored per game (both teams combined), NHL regular season, across each of the 108 seasons played since 1917-18. Data: team_season_standings (Supabase).</p>
+        <div class="eyebrow">NHL Fun Stats · Seasons</div>
+        <h1>Average Goals Per Game by Year</h1>
+        <p class="subtitle">Average goals scored per game (both teams combined), NHL regular season, for each season from 1940-41 to 2025-26. The red line marks the average over that span. Data: team_season_standings (Supabase).</p>
       </header>
 
       <div class="stat-row" id="stat-row"></div>
@@ -64,6 +70,7 @@
               <tr>
                 <th data-key="year" data-type="num">Season</th>
                 <th data-key="goals_per_game" data-type="num">Goals/Game</th>
+                <th data-key="vs_average" data-type="num">VS_Average</th>
                 <th data-key="total_goals" data-type="num">Total Goals</th>
                 <th data-key="nb_teams" data-type="num">Teams</th>
                 <th data-key="games_played" data-type="num">Games/Team</th>
@@ -82,7 +89,12 @@
 <script>
 const DATA = [
 {"year":1917,"total_goals":344,"nb_teams":4,"games_played":22},{"year":1918,"total_goals":223,"nb_teams":3,"games_played":18},{"year":1919,"total_goals":460,"nb_teams":4,"games_played":24},{"year":1920,"total_goals":406,"nb_teams":4,"games_played":24},{"year":1921,"total_goals":380,"nb_teams":4,"games_played":24},{"year":1922,"total_goals":313,"nb_teams":4,"games_played":24},{"year":1923,"total_goals":255,"nb_teams":4,"games_played":24},{"year":1924,"total_goals":450,"nb_teams":6,"games_played":30},{"year":1925,"total_goals":581,"nb_teams":7,"games_played":36},{"year":1926,"total_goals":879,"nb_teams":10,"games_played":44},{"year":1927,"total_goals":836,"nb_teams":10,"games_played":44},{"year":1928,"total_goals":642,"nb_teams":10,"games_played":44},{"year":1929,"total_goals":1301,"nb_teams":10,"games_played":44},{"year":1930,"total_goals":1054,"nb_teams":10,"games_played":44},{"year":1931,"total_goals":957,"nb_teams":8,"games_played":48},{"year":1932,"total_goals":983,"nb_teams":9,"games_played":48},{"year":1933,"total_goals":1041,"nb_teams":9,"games_played":48},{"year":1934,"total_goals":1087,"nb_teams":9,"games_played":48},{"year":1935,"total_goals":831,"nb_teams":8,"games_played":48},{"year":1936,"total_goals":946,"nb_teams":8,"games_played":48},{"year":1937,"total_goals":972,"nb_teams":8,"games_played":48},{"year":1938,"total_goals":851,"nb_teams":7,"games_played":48},{"year":1939,"total_goals":838,"nb_teams":7,"games_played":48},{"year":1940,"total_goals":900,"nb_teams":7,"games_played":48},{"year":1941,"total_goals":1047,"nb_teams":7,"games_played":48},{"year":1942,"total_goals":1083,"nb_teams":6,"games_played":50},{"year":1943,"total_goals":1225,"nb_teams":6,"games_played":50},{"year":1944,"total_goals":1103,"nb_teams":6,"games_played":50},{"year":1945,"total_goals":1003,"nb_teams":6,"games_played":50},{"year":1946,"total_goals":1138,"nb_teams":6,"games_played":60},{"year":1947,"total_goals":1054,"nb_teams":6,"games_played":60},{"year":1948,"total_goals":978,"nb_teams":6,"games_played":60},{"year":1949,"total_goals":1148,"nb_teams":6,"games_played":70},{"year":1950,"total_goals":1139,"nb_teams":6,"games_played":70},{"year":1951,"total_goals":1090,"nb_teams":6,"games_played":70},{"year":1952,"total_goals":1006,"nb_teams":6,"games_played":70},{"year":1953,"total_goals":1009,"nb_teams":6,"games_played":70},{"year":1954,"total_goals":1059,"nb_teams":6,"games_played":70},{"year":1955,"total_goals":1064,"nb_teams":6,"games_played":70},{"year":1956,"total_goals":1130,"nb_teams":6,"games_played":70},{"year":1957,"total_goals":1175,"nb_teams":6,"games_played":70},{"year":1958,"total_goals":1217,"nb_teams":6,"games_played":70},{"year":1959,"total_goals":1238,"nb_teams":6,"games_played":70},{"year":1960,"total_goals":1261,"nb_teams":6,"games_played":70},{"year":1961,"total_goals":1264,"nb_teams":6,"games_played":70},{"year":1962,"total_goals":1249,"nb_teams":6,"games_played":70},{"year":1963,"total_goals":1166,"nb_teams":6,"games_played":70},{"year":1964,"total_goals":1208,"nb_teams":6,"games_played":70},{"year":1965,"total_goals":1277,"nb_teams":6,"games_played":70},{"year":1966,"total_goals":1252,"nb_teams":6,"games_played":70},{"year":1967,"total_goals":2476,"nb_teams":12,"games_played":74},{"year":1968,"total_goals":2718,"nb_teams":12,"games_played":76},{"year":1969,"total_goals":2649,"nb_teams":12,"games_played":76},{"year":1970,"total_goals":3409,"nb_teams":14,"games_played":78},{"year":1971,"total_goals":3348,"nb_teams":14,"games_played":78},{"year":1972,"total_goals":4088,"nb_teams":16,"games_played":78},{"year":1973,"total_goals":3989,"nb_teams":16,"games_played":78},{"year":1974,"total_goals":4932,"nb_teams":18,"games_played":80},{"year":1975,"total_goals":4913,"nb_teams":18,"games_played":80},{"year":1976,"total_goals":4783,"nb_teams":18,"games_played":80},{"year":1977,"total_goals":4747,"nb_teams":18,"games_played":80},{"year":1978,"total_goals":4757,"nb_teams":17,"games_played":80},{"year":1979,"total_goals":5902,"nb_teams":21,"games_played":80},{"year":1980,"total_goals":6457,"nb_teams":21,"games_played":80},{"year":1981,"total_goals":6741,"nb_teams":21,"games_played":80},{"year":1982,"total_goals":6493,"nb_teams":21,"games_played":80},{"year":1983,"total_goals":6627,"nb_teams":21,"games_played":80},{"year":1984,"total_goals":6530,"nb_teams":21,"games_played":80},{"year":1985,"total_goals":6667,"nb_teams":21,"games_played":80},{"year":1986,"total_goals":6165,"nb_teams":21,"games_played":80},{"year":1987,"total_goals":6237,"nb_teams":21,"games_played":80},{"year":1988,"total_goals":6286,"nb_teams":21,"games_played":80},{"year":1989,"total_goals":6189,"nb_teams":21,"games_played":80},{"year":1990,"total_goals":5805,"nb_teams":21,"games_played":80},{"year":1991,"total_goals":6123,"nb_teams":22,"games_played":80},{"year":1992,"total_goals":7311,"nb_teams":24,"games_played":84},{"year":1993,"total_goals":7081,"nb_teams":26,"games_played":84},{"year":1994,"total_goals":3727,"nb_teams":26,"games_played":48},{"year":1995,"total_goals":6701,"nb_teams":26,"games_played":82},{"year":1996,"total_goals":6216,"nb_teams":26,"games_played":82},{"year":1997,"total_goals":5624,"nb_teams":26,"games_played":82},{"year":1998,"total_goals":5830,"nb_teams":27,"games_played":82},{"year":1999,"total_goals":6306,"nb_teams":28,"games_played":82},{"year":2000,"total_goals":6782,"nb_teams":30,"games_played":82},{"year":2001,"total_goals":6442,"nb_teams":30,"games_played":82},{"year":2002,"total_goals":6530,"nb_teams":30,"games_played":82},{"year":2003,"total_goals":6318,"nb_teams":30,"games_played":82},{"year":2005,"total_goals":7588,"nb_teams":30,"games_played":82},{"year":2006,"total_goals":7246,"nb_teams":30,"games_played":82},{"year":2007,"total_goals":6847,"nb_teams":30,"games_played":82},{"year":2008,"total_goals":7165,"nb_teams":30,"games_played":82},{"year":2009,"total_goals":6987,"nb_teams":30,"games_played":82},{"year":2010,"total_goals":6870,"nb_teams":30,"games_played":82},{"year":2011,"total_goals":6726,"nb_teams":30,"games_played":82},{"year":2012,"total_goals":3919,"nb_teams":30,"games_played":48},{"year":2013,"total_goals":6751,"nb_teams":30,"games_played":82},{"year":2014,"total_goals":6719,"nb_teams":30,"games_played":82},{"year":2015,"total_goals":6672,"nb_teams":30,"games_played":82},{"year":2016,"total_goals":6803,"nb_teams":30,"games_played":82},{"year":2017,"total_goals":7552,"nb_teams":31,"games_played":82},{"year":2018,"total_goals":7664,"nb_teams":31,"games_played":82},{"year":2019,"total_goals":6534,"nb_teams":31,"games_played":71},{"year":2020,"total_goals":5096,"nb_teams":31,"games_played":56},{"year":2021,"total_goals":8252,"nb_teams":32,"games_played":82},{"year":2022,"total_goals":8343,"nb_teams":32,"games_played":82},{"year":2023,"total_goals":8168,"nb_teams":32,"games_played":82},{"year":2024,"total_goals":7978,"nb_teams":32,"games_played":82},{"year":2025,"total_goals":8205,"nb_teams":32,"games_played":82}
-].map(d => ({...d, goals_per_game: +(d.total_goals / (d.nb_teams * d.games_played / 2)).toFixed(2)}));
+]
+  .filter(d => d.year >= 1940)
+  .map(d => ({...d, goals_per_game: +(d.total_goals / (d.nb_teams * d.games_played / 2)).toFixed(2)}));
+
+const AVG_SINCE_1940 = DATA.reduce((sum,d) => sum + d.goals_per_game, 0) / DATA.length;
+DATA.forEach(d => { d.vs_average = +(d.goals_per_game / AVG_SINCE_1940).toFixed(2); });
 
 function seasonLabel(y){ return y + '-' + String(y+1).slice(-2); }
 
@@ -95,7 +107,8 @@ const stats = [
   {label:'Most Recent Season', value:latest.goals_per_game.toFixed(2), small:seasonLabel(latest.year)},
   {label:'All-Time High', value:maxRow.goals_per_game.toFixed(2), small:seasonLabel(maxRow.year)},
   {label:'All-Time Low', value:minRow.goals_per_game.toFixed(2), small:seasonLabel(minRow.year)},
-  {label:'Seasons Covered', value:DATA.length, small:'1917–2025'},
+  {label:'Avg Since 1940', value:AVG_SINCE_1940.toFixed(2), small:'1940–2025'},
+  {label:'Seasons Covered', value:DATA.length, small:'1940–2025'},
 ];
 statRow.innerHTML = stats.map(s => `
   <div class="stat">
@@ -136,11 +149,14 @@ xTicks.forEach(yr=>{
 
 const peak = maxRow;
 const peakX = xPos(peak.year), peakY = yPos(peak.goals_per_game);
+const avgY = yPos(AVG_SINCE_1940);
 
 const svg = document.getElementById('chart');
 svg.innerHTML = `
   ${gridLines.join('')}
   <path class="chart-area" d="${area}"/>
+  <line class="avg-line" x1="${PAD_L}" y1="${avgY}" x2="${W-PAD_R}" y2="${avgY}"/>
+  <text class="avg-line-label" x="${W-PAD_R-4}" y="${avgY-6}" text-anchor="end">Avg since 1940: ${AVG_SINCE_1940.toFixed(2)}</text>
   <path class="chart-line" d="${path}"/>
   <g class="chart-peak">
     <circle cx="${peakX}" cy="${peakY}" r="3.5"/>
@@ -158,6 +174,7 @@ function render(rows){
     <tr data-year="${d.year}">
       <td>${seasonLabel(d.year)}</td>
       <td>${d.goals_per_game.toFixed(2)}</td>
+      <td class="${d.vs_average >= 1 ? 'vs-above' : 'vs-below'}">${d.vs_average.toFixed(2)}×</td>
       <td>${d.total_goals.toLocaleString('en-US')}</td>
       <td>${d.nb_teams}</td>
       <td>${d.games_played}</td>
