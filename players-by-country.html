@@ -76,6 +76,11 @@
         </div>
 
         <div class="filter-group">
+          <div class="filter-label">Position</div>
+          <div class="filter-countries" id="filter-positions"></div>
+        </div>
+
+        <div class="filter-group">
           <div class="filter-label">
             Draft Round
             <span class="filter-bulk">
@@ -150,6 +155,10 @@
                   <th data-key="country" data-type="str">Country</th>
                   <th data-key="total" data-type="num">Player-Seasons</th>
                   <th data-key="pct" data-type="num">% of Filtered Total</th>
+                  <th data-key="pctPlayers" data-type="num">% of Players</th>
+                  <th data-key="pctGames" data-type="num">% of Games</th>
+                  <th data-key="pctGoals" data-type="num">% of Goals</th>
+                  <th data-key="pctPoints" data-type="num">% of Points</th>
                   <th data-key="first_year" data-type="num">First Season</th>
                 </tr>
               </thead>
@@ -244,6 +253,8 @@ let selectedRounds = new Set(ROUND_OPTIONS);
 const teamIds = [...new Set(SEASON_ROWS.map(r => r[1]).filter(t => t !== null))]
   .sort((a,b) => (TEAM_NAMES[a]||'').localeCompare(TEAM_NAMES[b]||''));
 let selectedTeams = new Set(teamIds);
+const POSITION_OPTIONS = [{key:'F', label:'Forward'}, {key:'D', label:'Defense'}, {key:'G', label:'Goalie'}];
+let selectedPositions = new Set(POSITION_OPTIONS.map(p => p.key));
 let yearMin = 1940, yearMax = 2025;
 let minCareerGames = 0, minCareerPoints = 0;
 
@@ -271,6 +282,13 @@ roundsBox.innerHTML = ROUND_OPTIONS.map(r => `
     ${roundLabel(r)}
   </label>`).join('');
 
+const positionsBox = document.getElementById('filter-positions');
+positionsBox.innerHTML = POSITION_OPTIONS.map(p => `
+  <label class="filter-checkbox">
+    <input type="checkbox" data-pos="${p.key}" checked>
+    ${p.label}
+  </label>`).join('');
+
 const teamsBox = document.getElementById('filter-teams');
 teamsBox.innerHTML = teamIds.map(t => `
   <label class="filter-checkbox">
@@ -290,12 +308,14 @@ function roundMatches(round){
 }
 
 // --- filtering + aggregation ---
+// row: [year, team, country, round, carGames, carPts, playerId, games, gls, pts, posGroup]
 function getFilteredRows(){
   return SEASON_ROWS.filter(r => {
-    const [year, team, , round, carGames, carPts] = r;
+    const [year, team, , round, carGames, carPts, , , , , posGroup] = r;
     if(year < yearMin || year > yearMax) return false;
     if(!selectedTeams.has(team)) return false;
     if(!roundMatches(round)) return false;
+    if(posGroup !== null && !selectedPositions.has(posGroup)) return false;
     if(minCareerGames > 0 && (carGames ?? 0) < minCareerGames) return false;
     if(minCareerPoints > 0 && (carPts ?? 0) < minCareerPoints) return false;
     return true;
@@ -315,13 +335,20 @@ function computeYearly(rows){
 
 function computeCountryTotals(rows){
   const map = new Map();
-  rows.forEach(([year,,country]) => {
-    if(!map.has(country)) map.set(country, {code:country, total:0, first_year:year});
+  rows.forEach(([year, , country, , , , playerId, games, gls, pts]) => {
+    if(!map.has(country)) map.set(country, {
+      code:country, total:0, first_year:year,
+      players:new Set(), games:0, goals:0, points:0,
+    });
     const c = map.get(country);
     c.total++;
     if(year < c.first_year) c.first_year = year;
+    if(playerId !== null) c.players.add(playerId);
+    c.games += games || 0;
+    c.goals += gls || 0;
+    c.points += pts || 0;
   });
-  return [...map.values()];
+  return [...map.values()].map(c => ({...c, playerCount: c.players.size}));
 }
 
 // --- chart geometry ---
@@ -539,6 +566,10 @@ function renderTable(){
       <td>${flagEmoji(COUNTRY_META[c.code].flag)} ${c.name}</td>
       <td>${c.total.toLocaleString('en-US')}</td>
       <td>${c.pct.toFixed(2)}%</td>
+      <td>${c.pctPlayers.toFixed(2)}%</td>
+      <td>${c.pctGames.toFixed(2)}%</td>
+      <td>${c.pctGoals.toFixed(2)}%</td>
+      <td>${c.pctPoints.toFixed(2)}%</td>
       <td>${seasonLabel(c.first_year)}</td>
     </tr>`).join('');
 }
@@ -680,8 +711,20 @@ function recompute(){
   currentYearly = computeYearly(rows);
   const countryTotals = computeCountryTotals(rows);
   const totalAll = rows.length;
+  const grandPlayers = countryTotals.reduce((s,c)=>s+c.playerCount, 0);
+  const grandGames = countryTotals.reduce((s,c)=>s+c.games, 0);
+  const grandGoals = countryTotals.reduce((s,c)=>s+c.goals, 0);
+  const grandPoints = countryTotals.reduce((s,c)=>s+c.points, 0);
   currentTableData = countryTotals
-    .map(c => ({...c, name: COUNTRY_META[c.code].name, pct: totalAll ? c.total/totalAll*100 : 0}))
+    .map(c => ({
+      ...c,
+      name: COUNTRY_META[c.code].name,
+      pct: totalAll ? c.total/totalAll*100 : 0,
+      pctPlayers: grandPlayers ? c.playerCount/grandPlayers*100 : 0,
+      pctGames: grandGames ? c.games/grandGames*100 : 0,
+      pctGoals: grandGoals ? c.goals/grandGoals*100 : 0,
+      pctPoints: grandPoints ? c.points/grandPoints*100 : 0,
+    }))
     .sort((a,b)=>b.total-a.total);
 
   renderStats(rows, currentYearly, countryTotals);
@@ -713,6 +756,13 @@ teamsBox.addEventListener('change', e => {
   if(!cb.matches('input[type="checkbox"]')) return;
   const id = Number(cb.dataset.team);
   if(cb.checked) selectedTeams.add(id); else selectedTeams.delete(id);
+  recompute();
+});
+positionsBox.addEventListener('change', e => {
+  const cb = e.target;
+  if(!cb.matches('input[type="checkbox"]')) return;
+  const key = cb.dataset.pos;
+  if(cb.checked) selectedPositions.add(key); else selectedPositions.delete(key);
   recompute();
 });
 yearMinInput.addEventListener('change', () => {
@@ -765,6 +815,8 @@ document.getElementById('filter-reset').addEventListener('click', () => {
   selectedCountries = new Set(DEFAULT_COUNTRIES);
   selectedRounds = new Set(ROUND_OPTIONS);
   selectedTeams = new Set(teamIds);
+  selectedPositions = new Set(POSITION_OPTIONS.map(p => p.key));
+  positionsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
   highlightedCountry = null;
   yearMin = 1940; yearMax = 2025;
   yearMinInput.value = 1940; yearMaxInput.value = 2025;
