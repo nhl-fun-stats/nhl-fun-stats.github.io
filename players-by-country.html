@@ -53,291 +53,254 @@
   </aside>
 
   <main class="main">
-    <div class="page">
-      <header class="page-header">
-        <div class="eyebrow">NHL Fun Stats · Players</div>
-        <h1>Players by Country</h1>
-        <p class="subtitle">Where NHL players have come from, year by year, since 1917-18. Each line is the share of that season's new NHL players born in that country. Data: players (Supabase).</p>
-      </header>
-
-      <div class="stat-row" id="stat-row"></div>
-
-      <div class="card notes-card">
-        <div class="notes-label">📝 Notes</div>
-        <ul class="notes-body">
-          <li>The NHL was almost entirely Canadian-born until the 1970s expansion era, when American and Swedish players started arriving in real numbers.</li>
-          <li>Russian and Czech/Slovak players show up sharply after 1989-90 — the fall of the Iron Curtain opened the door for Soviet and Eastern Bloc players to join the NHL.</li>
-        </ul>
-      </div>
-
-      <div class="card chart-card">
-        <h2>Share of New NHL Players by Country, by Year</h2>
-        <p class="note">% of that season's debuting players born in each country. Click a country in the legend to show/hide it. Hover the chart to inspect a year.</p>
-        <div class="chart-legend" id="chart-legend"></div>
-        <svg class="chart" id="chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
-        <div class="multi-tooltip" id="tooltip"></div>
-      </div>
-
-      <div class="card table-card">
-        <h2>All Countries Represented</h2>
-        <p class="note">Click a header to sort. 46 countries and counting.</p>
-        <div class="table-scroll">
-          <table id="data-table">
-            <thead>
-              <tr>
-                <th data-key="country" data-type="str">Country</th>
-                <th data-key="total" data-type="num">Total Players</th>
-                <th data-key="pct" data-type="num">% of All Players</th>
-                <th data-key="first_year" data-type="num">First Season</th>
-                <th data-key="first_player" data-type="str">First Player</th>
-              </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card comments-card">
-        <h2>React</h2>
-        <p class="note">Quick reaction, no sign-in needed.</p>
-        <div class="reactions" id="reactions">
-          <button class="reaction-btn" data-key="like"><span class="emoji">👍</span><span class="count">–</span></button>
-          <button class="reaction-btn" data-key="fire"><span class="emoji">🔥</span><span class="count">–</span></button>
-          <button class="reaction-btn" data-key="wow"><span class="emoji">😮</span><span class="count">–</span></button>
-          <button class="reaction-btn" data-key="heart"><span class="emoji">❤️</span><span class="count">–</span></button>
-          <button class="reaction-btn" data-key="laugh"><span class="emoji">😂</span><span class="count">–</span></button>
+    <div class="content-with-filters">
+      <aside class="filters-panel">
+        <div class="filter-group">
+          <div class="filter-label">Countries</div>
+          <div class="filter-countries" id="filter-countries"></div>
         </div>
 
-        <h2 style="margin-top:20px;">Comments</h2>
-        <p class="note">Sign in with GitHub to leave a comment or reaction.</p>
-        <div class="giscus"></div>
-        <script src="https://giscus.app/client.js"
-          data-repo="nhl-fun-stats/nhl-fun-stats.github.io"
-          data-repo-id="R_kgDOT7wLwg"
-          data-category="Announcements"
-          data-category-id="DIC_kwDOT7wLws4DDnZb"
-          data-mapping="pathname"
-          data-strict="0"
-          data-reactions-enabled="1"
-          data-emit-metadata="0"
-          data-input-position="bottom"
-          data-theme="preferred_color_scheme"
-          data-lang="en"
-          crossorigin="anonymous"
-          async>
-        </script>
-      </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filter-round">Draft Round</label>
+          <select id="filter-round" class="filter-select"></select>
+        </div>
 
-      <footer class="page-footer">
-        Source: players table, birth country as recorded per player · 2004-05 excluded (lockout, no new players)
-        <div class="page-views"><img src="https://hits.sh/nhl-fun-stats.github.io/players-by-country.html.svg?style=flat-square&label=page%20views&color=1d6fa5" alt="page views"></div>
-      </footer>
+        <div class="filter-group">
+          <label class="filter-label" for="filter-team">Team</label>
+          <select id="filter-team" class="filter-select"></select>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">Year Range</div>
+          <div class="filter-year-range">
+            <input type="number" id="filter-year-min" min="1940" max="2025" value="1940">
+            <span>–</span>
+            <input type="number" id="filter-year-max" min="1940" max="2025" value="2025">
+          </div>
+        </div>
+
+        <button class="filter-reset" id="filter-reset">Reset all filters</button>
+      </aside>
+
+      <div class="page">
+        <header class="page-header">
+          <div class="eyebrow">NHL Fun Stats · Players</div>
+          <h1>Players by Country</h1>
+          <p class="subtitle">Where NHL players have come from, season by season, since 1940-41. A player counts toward a season only if they played at least 5 games that season. Use the filters to zoom into a country, draft round, team, or year range. Data: players + stats (Supabase).</p>
+        </header>
+
+        <div class="stat-row" id="stat-row"></div>
+
+        <div class="card notes-card">
+          <div class="notes-label">📝 Notes</div>
+          <ul class="notes-body">
+            <li>The NHL was almost entirely Canadian-born until the 1970s expansion era, when American and Swedish players started arriving in real numbers.</li>
+            <li>Russian and Czech/Slovak players show up sharply after 1989-90 — the fall of the Iron Curtain opened the door for Soviet and Eastern Bloc players to join the NHL.</li>
+          </ul>
+        </div>
+
+        <div class="card chart-card">
+          <h2>Share of NHL Players by Country, by Season</h2>
+          <p class="note">% of that season's qualifying players (5+ games) born in each country. Click a country in the filter panel to show/hide it. Hover the chart to inspect a season.</p>
+          <svg class="chart" id="chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
+          <div class="multi-tooltip" id="tooltip"></div>
+        </div>
+
+        <div class="card table-card">
+          <h2>Countries in the Current Filter</h2>
+          <p class="note">Click a header to sort. Reflects whatever filters are active on the left.</p>
+          <div class="table-scroll">
+            <table id="data-table">
+              <thead>
+                <tr>
+                  <th data-key="country" data-type="str">Country</th>
+                  <th data-key="total" data-type="num">Player-Seasons</th>
+                  <th data-key="pct" data-type="num">% of Filtered Total</th>
+                  <th data-key="first_year" data-type="num">First Season</th>
+                </tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card comments-card">
+          <h2>React</h2>
+          <p class="note">Quick reaction, no sign-in needed.</p>
+          <div class="reactions" id="reactions">
+            <button class="reaction-btn" data-key="like"><span class="emoji">👍</span><span class="count">–</span></button>
+            <button class="reaction-btn" data-key="fire"><span class="emoji">🔥</span><span class="count">–</span></button>
+            <button class="reaction-btn" data-key="wow"><span class="emoji">😮</span><span class="count">–</span></button>
+            <button class="reaction-btn" data-key="heart"><span class="emoji">❤️</span><span class="count">–</span></button>
+            <button class="reaction-btn" data-key="laugh"><span class="emoji">😂</span><span class="count">–</span></button>
+          </div>
+
+          <h2 style="margin-top:20px;">Comments</h2>
+          <p class="note">Sign in with GitHub to leave a comment or reaction.</p>
+          <div class="giscus"></div>
+          <script src="https://giscus.app/client.js"
+            data-repo="nhl-fun-stats/nhl-fun-stats.github.io"
+            data-repo-id="R_kgDOT7wLwg"
+            data-category="Announcements"
+            data-category-id="DIC_kwDOT7wLws4DDnZb"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+          </script>
+        </div>
+
+        <footer class="page-footer">
+          Source: players + stats tables · a player-season counts only with 5+ games played · 2004-05 excluded (lockout)
+          <div class="page-views"><img src="https://hits.sh/nhl-fun-stats.github.io/players-by-country.html.svg?style=flat-square&label=page%20views&color=1d6fa5" alt="page views"></div>
+        </footer>
+      </div>
     </div>
   </main>
 </div>
 
+<script src="assets/players-by-country-data.js"></script>
 <script>
-// --- data: new NHL players per year by country of birth ---
-const YEARLY = [
-{"year":1917,"can":27,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":29},{"year":1918,"can":5,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":5},{"year":1919,"can":17,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":19},{"year":1920,"can":6,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":6},{"year":1921,"can":9,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":9},{"year":1922,"can":3,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":4},{"year":1923,"can":10,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":11},{"year":1924,"can":26,"usa":2,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":29},{"year":1925,"can":29,"usa":2,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":32},{"year":1926,"can":59,"usa":2,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":61},{"year":1927,"can":27,"usa":0,"swe":0,"rus":1,"fin":0,"cze":0,"svk":0,"total":30},{"year":1928,"can":20,"usa":2,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":25},{"year":1929,"can":33,"usa":2,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":35},{"year":1930,"can":26,"usa":5,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":35},{"year":1931,"can":15,"usa":4,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":20},{"year":1932,"can":14,"usa":2,"swe":1,"rus":0,"fin":0,"cze":0,"svk":0,"total":20},{"year":1933,"can":23,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":27},{"year":1934,"can":19,"usa":2,"swe":0,"rus":1,"fin":0,"cze":0,"svk":0,"total":24},{"year":1935,"can":11,"usa":2,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":13},{"year":1936,"can":19,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":19},{"year":1937,"can":16,"usa":3,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":20},{"year":1938,"can":16,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":18},{"year":1939,"can":30,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":31},{"year":1940,"can":28,"usa":2,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":31},{"year":1941,"can":30,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":31},{"year":1942,"can":31,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":32},{"year":1943,"can":30,"usa":4,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":34},{"year":1944,"can":21,"usa":2,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":23},{"year":1945,"can":15,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":16},{"year":1946,"can":29,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":30},{"year":1947,"can":20,"usa":2,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":24},{"year":1948,"can":20,"usa":1,"swe":0,"rus":0,"fin":1,"cze":0,"svk":0,"total":22},{"year":1949,"can":20,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":20},{"year":1950,"can":28,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":30},{"year":1951,"can":22,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":25},{"year":1952,"can":23,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":23},{"year":1953,"can":21,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":22},{"year":1954,"can":15,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":15},{"year":1955,"can":26,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":26},{"year":1956,"can":24,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":25},{"year":1957,"can":11,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":11},{"year":1958,"can":19,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":20},{"year":1959,"can":19,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":1,"total":20},{"year":1960,"can":20,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":20},{"year":1961,"can":15,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":16},{"year":1962,"can":16,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":17},{"year":1963,"can":19,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":20},{"year":1964,"can":24,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":24},{"year":1965,"can":11,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":12},{"year":1966,"can":15,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":16},{"year":1967,"can":91,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":93},{"year":1968,"can":39,"usa":0,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":44},{"year":1969,"can":35,"usa":2,"swe":0,"rus":0,"fin":1,"cze":0,"svk":0,"total":39},{"year":1970,"can":71,"usa":1,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":72},{"year":1971,"can":49,"usa":6,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":56},{"year":1972,"can":88,"usa":3,"swe":2,"rus":0,"fin":0,"cze":0,"svk":0,"total":93},{"year":1973,"can":72,"usa":7,"swe":3,"rus":0,"fin":0,"cze":0,"svk":0,"total":83},{"year":1974,"can":75,"usa":11,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":88},{"year":1975,"can":48,"usa":9,"swe":0,"rus":0,"fin":0,"cze":0,"svk":0,"total":57},{"year":1976,"can":59,"usa":11,"swe":1,"rus":0,"fin":1,"cze":0,"svk":0,"total":73},{"year":1977,"can":59,"usa":5,"swe":3,"rus":0,"fin":0,"cze":1,"svk":0,"total":69},{"year":1978,"can":49,"usa":10,"swe":8,"rus":0,"fin":0,"cze":0,"svk":0,"total":69},{"year":1979,"can":121,"usa":26,"swe":7,"rus":0,"fin":4,"cze":1,"svk":0,"total":160},{"year":1980,"can":83,"usa":13,"swe":5,"rus":0,"fin":1,"cze":2,"svk":2,"total":107},{"year":1981,"can":77,"usa":9,"swe":7,"rus":0,"fin":8,"cze":3,"svk":1,"total":106},{"year":1982,"can":78,"usa":6,"swe":5,"rus":0,"fin":2,"cze":4,"svk":1,"total":97},{"year":1983,"can":67,"usa":17,"swe":5,"rus":0,"fin":1,"cze":0,"svk":0,"total":90},{"year":1984,"can":63,"usa":16,"swe":2,"rus":0,"fin":5,"cze":3,"svk":0,"total":92},{"year":1985,"can":52,"usa":17,"swe":4,"rus":0,"fin":7,"cze":1,"svk":1,"total":83},{"year":1986,"can":62,"usa":13,"swe":3,"rus":0,"fin":4,"cze":2,"svk":0,"total":85},{"year":1987,"can":77,"usa":14,"swe":5,"rus":0,"fin":0,"cze":0,"svk":0,"total":98},{"year":1988,"can":54,"usa":9,"swe":1,"rus":0,"fin":3,"cze":2,"svk":2,"total":72},{"year":1989,"can":55,"usa":19,"swe":4,"rus":9,"fin":2,"cze":5,"svk":0,"total":95},{"year":1990,"can":55,"usa":13,"swe":3,"rus":4,"fin":0,"cze":8,"svk":1,"total":89},{"year":1991,"can":53,"usa":24,"swe":3,"rus":10,"fin":2,"cze":2,"svk":0,"total":97},{"year":1992,"can":49,"usa":21,"swe":4,"rus":17,"fin":1,"cze":9,"svk":2,"total":107},{"year":1993,"can":63,"usa":20,"swe":5,"rus":15,"fin":1,"cze":3,"svk":2,"total":111},{"year":1994,"can":49,"usa":13,"swe":4,"rus":12,"fin":2,"cze":4,"svk":1,"total":89},{"year":1995,"can":67,"usa":17,"swe":9,"rus":4,"fin":7,"cze":5,"svk":2,"total":114},{"year":1996,"can":58,"usa":17,"swe":9,"rus":3,"fin":3,"cze":7,"svk":1,"total":100},{"year":1997,"can":52,"usa":12,"swe":6,"rus":7,"fin":2,"cze":7,"svk":3,"total":93},{"year":1998,"can":53,"usa":14,"swe":3,"rus":7,"fin":5,"cze":8,"svk":3,"total":96},{"year":1999,"can":55,"usa":21,"swe":8,"rus":9,"fin":5,"cze":10,"svk":3,"total":117},{"year":2000,"can":52,"usa":12,"swe":7,"rus":9,"fin":9,"cze":16,"svk":10,"total":127},{"year":2001,"can":41,"usa":10,"swe":9,"rus":3,"fin":8,"cze":10,"svk":4,"total":87},{"year":2002,"can":54,"usa":17,"swe":4,"rus":8,"fin":8,"cze":9,"svk":8,"total":111},{"year":2003,"can":53,"usa":20,"swe":8,"rus":6,"fin":8,"cze":7,"svk":4,"total":112},{"year":2005,"can":87,"usa":39,"swe":6,"rus":6,"fin":8,"cze":12,"svk":4,"total":170},{"year":2006,"can":52,"usa":26,"swe":6,"rus":4,"fin":6,"cze":4,"svk":3,"total":111},{"year":2007,"can":64,"usa":30,"swe":8,"rus":1,"fin":3,"cze":7,"svk":1,"total":117},{"year":2008,"can":58,"usa":32,"swe":7,"rus":2,"fin":5,"cze":5,"svk":3,"total":121},{"year":2009,"can":62,"usa":21,"swe":8,"rus":5,"fin":6,"cze":2,"svk":0,"total":108},{"year":2010,"can":63,"usa":33,"swe":11,"rus":6,"fin":1,"cze":2,"svk":0,"total":122},{"year":2011,"can":59,"usa":27,"swe":10,"rus":5,"fin":1,"cze":1,"svk":0,"total":109},{"year":2012,"can":39,"usa":24,"swe":7,"rus":3,"fin":1,"cze":4,"svk":2,"total":87},{"year":2013,"can":60,"usa":35,"swe":16,"rus":5,"fin":6,"cze":3,"svk":2,"total":133},{"year":2014,"can":46,"usa":19,"swe":11,"rus":5,"fin":7,"cze":5,"svk":0,"total":103},{"year":2015,"can":54,"usa":35,"swe":10,"rus":9,"fin":6,"cze":2,"svk":0,"total":122},{"year":2016,"can":45,"usa":44,"swe":9,"rus":6,"fin":9,"cze":6,"svk":2,"total":127},{"year":2017,"can":50,"usa":35,"swe":15,"rus":6,"fin":2,"cze":8,"svk":0,"total":121},{"year":2018,"can":44,"usa":39,"swe":12,"rus":8,"fin":12,"cze":5,"svk":2,"total":125},{"year":2019,"can":31,"usa":22,"swe":19,"rus":7,"fin":4,"cze":5,"svk":0,"total":95},{"year":2020,"can":46,"usa":24,"swe":6,"rus":9,"fin":12,"cze":3,"svk":0,"total":106},{"year":2021,"can":45,"usa":41,"swe":12,"rus":6,"fin":9,"cze":5,"svk":3,"total":133},{"year":2022,"can":34,"usa":16,"swe":14,"rus":9,"fin":4,"cze":3,"svk":3,"total":90},{"year":2023,"can":27,"usa":33,"swe":5,"rus":5,"fin":4,"cze":3,"svk":2,"total":82},{"year":2024,"can":27,"usa":22,"swe":11,"rus":6,"fin":5,"cze":3,"svk":0,"total":79},{"year":2025,"can":31,"usa":25,"swe":9,"rus":11,"fin":2,"cze":1,"svk":3,"total":84}
-];
+// SEASON_ROWS rows: [year, team_id, country_code, draft_round]
 
-// --- data: all countries, all-time totals ---
-const COUNTRIES = [
-{"code":"CAN","name":"Canada","flag":"CA","total":5557,"first_year":1917,"first_player":"Louis Berlinquette"},
-{"code":"USA","name":"United States","flag":"US","total":1462,"first_year":1917,"first_player":"Harry Mummery"},
-{"code":"SWE","name":"Sweden","flag":"SE","total":425,"first_year":1932,"first_player":"Gus Forslund"},
-{"code":"RUS","name":"Russia","flag":"RU","total":308,"first_year":1927,"first_player":"Val Hoffinger"},
-{"code":"FIN","name":"Finland","flag":"FI","total":267,"first_year":1948,"first_player":"Pentti Lund"},
-{"code":"CZE","name":"Czechia","flag":"CZ","total":263,"first_year":1977,"first_player":"Vaclav Nedomansky"},
-{"code":"SVK","name":"Slovakia","flag":"SK","total":97,"first_year":1959,"first_player":"Stan Mikita"},
-{"code":"GBR","name":"United Kingdom","flag":"GB","total":52,"first_year":1917,"first_player":"Joe Hall"},
-{"code":"DEU","name":"Germany","flag":"DE","total":44,"first_year":1968,"first_player":"Walt Tkaczuk"},
-{"code":"CHE","name":"Switzerland","flag":"CH","total":44,"first_year":1979,"first_player":"Mark Hardy"},
-{"code":"LVA","name":"Latvia","flag":"LV","total":27,"first_year":1989,"first_player":"Helmut Balderis"},
-{"code":"UKR","name":"Ukraine","flag":"UA","total":18,"first_year":1928,"first_player":"Johnny Gottselig"},
-{"code":"DNK","name":"Denmark","flag":"DK","total":18,"first_year":1968,"first_player":"Poul Popiel"},
-{"code":"BLR","name":"Belarus","flag":"BY","total":17,"first_year":1996,"first_player":"Ruslan Salei"},
-{"code":"FRA","name":"France","flag":"FR","total":13,"first_year":1981,"first_player":"Paul MacLean"},
-{"code":"AUT","name":"Austria","flag":"AT","total":12,"first_year":2003,"first_player":"Christoph Brandner"},
-{"code":"KAZ","name":"Kazakhstan","flag":"KZ","total":10,"first_year":1999,"first_player":"Nik Antropov"},
-{"code":"NOR","name":"Norway","flag":"NO","total":9,"first_year":1997,"first_player":"Espen Knutsen"},
-{"code":"POL","name":"Poland","flag":"PL","total":9,"first_year":1930,"first_player":"Joe Jerwa"},
-{"code":"ITA","name":"Italy","flag":"IT","total":4,"first_year":1973,"first_player":"Nelson Debenedet"},
-{"code":"IRL","name":"Ireland","flag":"IE","total":3,"first_year":1933,"first_player":"Jack Riley"},
-{"code":"NLD","name":"Netherlands","flag":"NL","total":3,"first_year":1974,"first_player":"Ed Kea"},
-{"code":"LTU","name":"Lithuania","flag":"LT","total":3,"first_year":1992,"first_player":"Darius Kasparaitis"},
-{"code":"KOR","name":"South Korea","flag":"KR","total":2,"first_year":1991,"first_player":"Jim Paek"},
-{"code":"SVN","name":"Slovenia","flag":"SI","total":2,"first_year":2006,"first_player":"Anze Kopitar"},
-{"code":"SRB","name":"Serbia","flag":"RS","total":2,"first_year":1971,"first_player":"Ivan Boldirev"},
-{"code":"NGA","name":"Nigeria","flag":"NG","total":2,"first_year":1998,"first_player":"Ruman Ndur"},
-{"code":"BEL","name":"Belgium","flag":"BE","total":2,"first_year":null,"first_player":"Sean Day"},
-{"code":"HRV","name":"Croatia","flag":"HR","total":2,"first_year":2014,"first_player":"Borna Rendulic"},
-{"code":"BRA","name":"Brazil","flag":"BR","total":2,"first_year":1999,"first_player":"Robyn Regehr"},
-{"code":"JPN","name":"Japan","flag":"JP","total":2,"first_year":2010,"first_player":"Ryan O'Marra"},
-{"code":"VEN","name":"Venezuela","flag":"VE","total":2,"first_year":1974,"first_player":"Rick Chartraw"},
-{"code":"ZAF","name":"South Africa","flag":"ZA","total":1,"first_year":1994,"first_player":"Olie Kolzig"},
-{"code":"BGR","name":"Bulgaria","flag":"BG","total":1,"first_year":2017,"first_player":"Alexandar Georgiev"},
-{"code":"BHR","name":"Bahrain","flag":"BH","total":1,"first_year":2000,"first_player":"Craig Adams"},
-{"code":"BHS","name":"Bahamas","flag":"BS","total":1,"first_year":2008,"first_player":"Andre Deveaux"},
-{"code":"EST","name":"Estonia","flag":"EE","total":1,"first_year":2012,"first_player":"Leo Komarov"},
-{"code":"HTI","name":"Haiti","flag":"HT","total":1,"first_year":1991,"first_player":"Claude Vilgrain"},
-{"code":"IDN","name":"Indonesia","flag":"ID","total":1,"first_year":2005,"first_player":"Richie Regehr"},
-{"code":"JAM","name":"Jamaica","flag":"JM","total":1,"first_year":1990,"first_player":"Graeme Townshend"},
-{"code":"LBN","name":"Lebanon","flag":"LB","total":1,"first_year":1968,"first_player":"Ed Hatoum"},
-{"code":"PRY","name":"Paraguay","flag":"PY","total":1,"first_year":1976,"first_player":"Willi Plett"},
-{"code":"TWN","name":"Taiwan","flag":"TW","total":1,"first_year":1978,"first_player":"Rod Langway"},
-{"code":"TZA","name":"Tanzania","flag":"TZ","total":1,"first_year":2000,"first_player":"Chris Nielsen"},
-{"code":"UZB","name":"Uzbekistan","flag":"UZ","total":1,"first_year":2021,"first_player":"Arthur Kaliyev"},
-{"code":"AUS","name":"Australia","flag":"AU","total":1,"first_year":2021,"first_player":"Jordan Spence"}
-];
-const TOTAL_PLAYERS = COUNTRIES.reduce((s,c)=>s+c.total, 0);
+const COUNTRY_META = {
+  CAN:{name:"Canada",flag:"CA"}, USA:{name:"United States",flag:"US"}, SWE:{name:"Sweden",flag:"SE"},
+  RUS:{name:"Russia",flag:"RU"}, FIN:{name:"Finland",flag:"FI"}, CZE:{name:"Czechia",flag:"CZ"},
+  SVK:{name:"Slovakia",flag:"SK"}, GBR:{name:"United Kingdom",flag:"GB"}, DEU:{name:"Germany",flag:"DE"},
+  CHE:{name:"Switzerland",flag:"CH"}, LVA:{name:"Latvia",flag:"LV"}, UKR:{name:"Ukraine",flag:"UA"},
+  DNK:{name:"Denmark",flag:"DK"}, BLR:{name:"Belarus",flag:"BY"}, FRA:{name:"France",flag:"FR"},
+  AUT:{name:"Austria",flag:"AT"}, KAZ:{name:"Kazakhstan",flag:"KZ"}, NOR:{name:"Norway",flag:"NO"},
+  POL:{name:"Poland",flag:"PL"}, ITA:{name:"Italy",flag:"IT"}, IRL:{name:"Ireland",flag:"IE"},
+  NLD:{name:"Netherlands",flag:"NL"}, LTU:{name:"Lithuania",flag:"LT"}, KOR:{name:"South Korea",flag:"KR"},
+  SVN:{name:"Slovenia",flag:"SI"}, SRB:{name:"Serbia",flag:"RS"}, NGA:{name:"Nigeria",flag:"NG"},
+  BEL:{name:"Belgium",flag:"BE"}, HRV:{name:"Croatia",flag:"HR"}, BRA:{name:"Brazil",flag:"BR"},
+  JPN:{name:"Japan",flag:"JP"}, VEN:{name:"Venezuela",flag:"VE"}, ZAF:{name:"South Africa",flag:"ZA"},
+  BGR:{name:"Bulgaria",flag:"BG"}, BHR:{name:"Bahrain",flag:"BH"}, BHS:{name:"Bahamas",flag:"BS"},
+  EST:{name:"Estonia",flag:"EE"}, HTI:{name:"Haiti",flag:"HT"}, IDN:{name:"Indonesia",flag:"ID"},
+  JAM:{name:"Jamaica",flag:"JM"}, LBN:{name:"Lebanon",flag:"LB"}, PRY:{name:"Paraguay",flag:"PY"},
+  TWN:{name:"Taiwan",flag:"TW"}, TZA:{name:"Tanzania",flag:"TZ"}, UZB:{name:"Uzbekistan",flag:"UZ"},
+  AUS:{name:"Australia",flag:"AU"},
+};
+
+const TEAM_NAMES = {"1":"New Jersey Devils","2":"New York Islanders","3":"New York Rangers","4":"Philadelphia Flyers","5":"Pittsburgh Penguins","6":"Boston Bruins","7":"Buffalo Sabres","8":"Montreal Canadiens","9":"Ottawa Senators","10":"Toronto Maple Leafs","11":"Atlanta Thrashers","12":"Carolina Hurricanes","13":"Florida Panthers","14":"Tampa Bay Lightning","15":"Washington Capitals","16":"Chicago Blackhawks","17":"Detroit Red Wings","18":"Nashville Predators","19":"St. Louis Blues","20":"Calgary Flames","21":"Colorado Avalanche","22":"Edmonton Oilers","23":"Vancouver Canucks","24":"Anaheim Ducks","25":"Dallas Stars","26":"Los Angeles Kings","27":"Phoenix Coyotes","28":"San Jose Sharks","29":"Columbus Blue Jackets","30":"Minnesota Wild","31":"Minnesota North Stars","32":"Quebec Nordiques","33":"Winnipeg Jets (1979)","34":"Hartford Whalers","35":"Colorado Rockies","44":"New York Americans","46":"Oakland Seals","47":"Atlanta Flames","48":"Kansas City Scouts","49":"Cleveland Barons","51":"Brooklyn Americans","52":"Winnipeg Jets","53":"Arizona Coyotes","54":"Vegas Golden Knights","55":"Seattle Kraken","56":"California Golden Seals","59":"Utah Hockey Club","68":"Utah Mammoth"};
+
+const FIXED_COLORS = { CAN:'#e0162b', USA:'#1d6fa5', RUS:'#7a1620', SWE:'#d4a017', FIN:'#0891b2', CZE:'#d97706', SVK:'#db2777' };
+const EXTRA_PALETTE = ['#2e8b57','#7b4fa3','#0d9488','#9333ea','#65a30d','#0369a1','#be123c','#4d7c0f','#a21caf','#0f766e','#b45309','#4338ca','#15803d','#c2410c','#6d28d9','#0284c7','#ca8a04','#4f46e5','#059669','#dc2626'];
+const COLOR_MAP = {};
+(function assignColors(){
+  const rest = Object.keys(COUNTRY_META).filter(c => !FIXED_COLORS[c]).sort();
+  Object.assign(COLOR_MAP, FIXED_COLORS);
+  rest.forEach((c,i) => { COLOR_MAP[c] = EXTRA_PALETTE[i % EXTRA_PALETTE.length]; });
+})();
 
 function flagEmoji(iso2){
   return String.fromCodePoint(...[...iso2.toUpperCase()].map(c => 127397 + c.charCodeAt(0)));
 }
 
-const SERIES = [
-  {key:'can', code:'CAN', label:'Canada', color:'#1d6fa5'},
-  {key:'usa', code:'USA', label:'United States', color:'#c1121f'},
-  {key:'swe', code:'SWE', label:'Sweden', color:'#2e8b57'},
-  {key:'rus', code:'RUS', label:'Russia', color:'#7b4fa3'},
-  {key:'fin', code:'FIN', label:'Finland', color:'#0891b2'},
-  {key:'cze', code:'CZE', label:'Czechia', color:'#d97706'},
-  {key:'svk', code:'SVK', label:'Slovakia', color:'#db2777'},
-];
-YEARLY.forEach(d => { SERIES.forEach(s => { d[s.key + '_pct'] = d.total ? (d[s.key] / d.total * 100) : 0; }); });
+// --- state ---
+const DEFAULT_COUNTRIES = ['CAN','USA','SWE','RUS','FIN','CZE','SVK'];
+let selectedCountries = new Set(DEFAULT_COUNTRIES);
+let roundFilter = 'all';
+let teamFilter = 'all';
+let yearMin = 1940, yearMax = 2025;
 
-// --- stat row ---
-const statRow = document.getElementById('stat-row');
-function shareInRange(key, yFrom, yTo){
-  const rows = YEARLY.filter(d => d.year >= yFrom && d.year <= yTo);
-  const sum = rows.reduce((s,d)=>s+d[key], 0);
-  const total = rows.reduce((s,d)=>s+d.total, 0);
-  return total ? sum/total*100 : 0;
+// --- build filter panel ---
+const countriesBox = document.getElementById('filter-countries');
+const orderedCountries = Object.keys(COUNTRY_META).sort((a,b) => {
+  const ai = DEFAULT_COUNTRIES.indexOf(a), bi = DEFAULT_COUNTRIES.indexOf(b);
+  if(ai !== -1 && bi !== -1) return ai - bi;
+  if(ai !== -1) return -1;
+  if(bi !== -1) return 1;
+  return COUNTRY_META[a].name.localeCompare(COUNTRY_META[b].name);
+});
+countriesBox.innerHTML = orderedCountries.map(code => `
+  <label class="filter-checkbox">
+    <input type="checkbox" data-code="${code}" ${selectedCountries.has(code) ? 'checked' : ''}>
+    <span class="swatch" style="background:${COLOR_MAP[code]}"></span>
+    ${flagEmoji(COUNTRY_META[code].flag)} ${COUNTRY_META[code].name}
+  </label>`).join('');
+
+const roundSelect = document.getElementById('filter-round');
+const rounds = [...new Set(SEASON_ROWS.map(r => r[3]).filter(r => r !== null))].sort((a,b)=>a-b);
+roundSelect.innerHTML = '<option value="all">All Rounds</option><option value="undrafted">Undrafted</option>' +
+  rounds.map(r => `<option value="${r}">Round ${r}</option>`).join('');
+
+const teamSelect = document.getElementById('filter-team');
+const teamIds = [...new Set(SEASON_ROWS.map(r => r[1]).filter(t => t !== null))]
+  .sort((a,b) => (TEAM_NAMES[a]||'').localeCompare(TEAM_NAMES[b]||''));
+teamSelect.innerHTML = '<option value="all">All Teams</option>' +
+  teamIds.map(t => `<option value="${t}">${TEAM_NAMES[t] || ('Team ' + t)}</option>`).join('');
+
+const yearMinInput = document.getElementById('filter-year-min');
+const yearMaxInput = document.getElementById('filter-year-max');
+
+// --- filtering + aggregation ---
+function getFilteredRows(){
+  return SEASON_ROWS.filter(r => {
+    const [year, team, , round] = r;
+    if(year < yearMin || year > yearMax) return false;
+    if(teamFilter !== 'all' && team !== Number(teamFilter)) return false;
+    if(roundFilter === 'undrafted' && round !== null) return false;
+    if(roundFilter !== 'all' && roundFilter !== 'undrafted' && round !== Number(roundFilter)) return false;
+    return true;
+  });
 }
-const can1920s = shareInRange('can', 1920, 1929);
-const can2020s = shareInRange('can', 2020, 2025);
-const sweden = COUNTRIES.find(c=>c.code==='SWE');
-const stats = [
-  {label:'Countries Represented', value:COUNTRIES.length, small:'all-time'},
-  {label:'Canadian Share, 1920s', value:can1920s.toFixed(0)+'%', small:'of debuting players'},
-  {label:'Canadian Share, 2020s', value:can2020s.toFixed(0)+'%', small:'of debuting players'},
-  {label:'Top European Nation', value:flagEmoji(sweden.flag)+' '+sweden.name, small:sweden.total.toLocaleString('en-US')+' players'},
-];
-statRow.innerHTML = stats.map(s => `
-  <div class="stat">
-    <div class="label">${s.label}</div>
-    <div class="value">${s.value}<small>${s.small}</small></div>
-  </div>`).join('');
 
-// --- legend ---
-const legend = document.getElementById('chart-legend');
-const hidden = new Set();
-legend.innerHTML = SERIES.map(s => `
-  <div class="legend-chip" data-key="${s.key}">
-    <span class="swatch" style="background:${s.color}"></span>
-    ${flagEmoji(COUNTRIES.find(c=>c.code===s.code).flag)} ${s.label}
-  </div>`).join('');
+function computeYearly(rows){
+  const map = new Map();
+  rows.forEach(([year,,country]) => {
+    if(!map.has(year)) map.set(year, {year, total:0, byCountry:{}});
+    const y = map.get(year);
+    y.total++;
+    y.byCountry[country] = (y.byCountry[country]||0)+1;
+  });
+  return [...map.values()].filter(y=>y.total>0).sort((a,b)=>a.year-b.year);
+}
 
-// --- chart ---
+function computeCountryTotals(rows){
+  const map = new Map();
+  rows.forEach(([year,,country]) => {
+    if(!map.has(country)) map.set(country, {code:country, total:0, first_year:year});
+    const c = map.get(country);
+    c.total++;
+    if(year < c.first_year) c.first_year = year;
+  });
+  return [...map.values()];
+}
+
+// --- chart geometry ---
 const W = 900, H = 320, PAD_L = 40, PAD_R = 10, PAD_T = 14, PAD_B = 24;
-const years = YEARLY.map(d=>d.year);
-const xMin = Math.min(...years), xMax = Math.max(...years);
-const yMin = 0, yMax = 100, Y_STEP = 20;
-const xPos = yr => PAD_L + (yr - xMin) / (xMax - xMin) * (W - PAD_L - PAD_R);
-const yPos = v => H - PAD_B - (v - yMin) / (yMax - yMin) * (H - PAD_T - PAD_B);
-
+const Y_STEP = 20;
 const svg = document.getElementById('chart');
+const chartCard = document.querySelector('.chart-card');
+const tooltip = document.getElementById('tooltip');
 
-function buildPath(key){
+let currentYearly = [];
+
+function xPos(yr){ return PAD_L + (yr - yearMin) / Math.max(1, (yearMax - yearMin)) * (W - PAD_L - PAD_R); }
+function yPos(v){ return H - PAD_B - v / 100 * (H - PAD_T - PAD_B); }
+
+function buildPath(code){
   let d = '';
-  YEARLY.forEach((row,i)=>{
-    const x = xPos(row.year), y = yPos(row[key + '_pct']);
+  currentYearly.forEach((row,i)=>{
+    const pct = row.total ? (row.byCountry[code]||0) / row.total * 100 : 0;
+    const x = xPos(row.year), y = yPos(pct);
     d += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
   });
   return d;
 }
 
-const gridLines = [];
-for(let v=0; v<=yMax; v+=Y_STEP){
-  const y = yPos(v);
-  gridLines.push(`<line class="chart-axis" x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}"/>`);
-  gridLines.push(`<text class="chart-axis-label" x="${PAD_L-8}" y="${y+3}" text-anchor="end">${v}%</text>`);
-}
-const xTicks = [1920,1940,1960,1980,2000,2020];
-xTicks.forEach(yr=>{
-  gridLines.push(`<text class="chart-axis-label" x="${xPos(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
-});
-
-function renderChart(){
-  const lines = SERIES.map(s => hidden.has(s.key) ? '' :
-    `<path class="series-line" data-key="${s.key}" d="${buildPath(s.key)}" fill="none" stroke="${s.color}" stroke-width="2" opacity="0.9"/>`
-  ).join('');
-  svg.innerHTML = `
-    ${gridLines.join('')}
-    ${lines}
-    <g id="hover-dots"></g>
-    <line class="hover-line" id="hover-line" x1="0" y1="${PAD_T}" x2="0" y2="${H-PAD_B}"/>
-    <rect class="overlay" id="overlay" x="${PAD_L}" y="0" width="${W-PAD_L-PAD_R}" height="${H}"/>
-  `;
-  attachHoverHandlers();
-}
-renderChart();
-
-legend.querySelectorAll('.legend-chip').forEach(chip=>{
-  chip.addEventListener('click', () => {
-    const key = chip.dataset.key;
-    if(hidden.has(key)){ hidden.delete(key); chip.classList.remove('off'); }
-    else { hidden.add(key); chip.classList.add('off'); }
-    renderChart();
-  });
-});
-
-// --- table ---
-const tbody = document.getElementById('table-body');
-function render(rows){
-  tbody.innerHTML = rows.map(c => `
-    <tr>
-      <td>${flagEmoji(c.flag)} ${c.name}</td>
-      <td>${c.total.toLocaleString('en-US')}</td>
-      <td>${(c.total/TOTAL_PLAYERS*100).toFixed(2)}%</td>
-      <td>${c.first_year ? seasonLabel(c.first_year) : '—'}</td>
-      <td>${c.first_player}</td>
-    </tr>`).join('');
-}
-const tableData = COUNTRIES.map(c => ({...c, pct: c.total/TOTAL_PLAYERS*100}));
-render(tableData);
-
-let sortKey = 'total', sortDir = -1;
-document.querySelectorAll('thead th').forEach(th=>{
-  th.innerHTML += '<span class="arrow">▲</span>';
-  th.addEventListener('click', () => {
-    const key = th.dataset.key;
-    const type = th.dataset.type;
-    sortDir = (sortKey === key) ? -sortDir : 1;
-    sortKey = key;
-    document.querySelectorAll('thead th').forEach(t=>t.classList.remove('sorted'));
-    th.classList.add('sorted');
-    th.querySelector('.arrow').textContent = sortDir === 1 ? '▲' : '▼';
-    const field = key === 'country' ? 'name' : key;
-    const sorted = [...tableData].sort((a,b)=>{
-      if(type === 'str') return String(a[field]).localeCompare(String(b[field])) * sortDir;
-      return ((a[field] ?? -1) - (b[field] ?? -1)) * sortDir;
-    });
-    render(sorted);
-  });
-});
-
-// --- hover ---
-const tooltip = document.getElementById('tooltip');
-const chartCard = document.querySelector('.chart-card');
-
 function nearestYear(yearEstimate){
-  let best = YEARLY[0], bestDist = Infinity;
-  for(const d of YEARLY){
-    const dist = Math.abs(d.year - yearEstimate);
-    if(dist < bestDist){ bestDist = dist; best = d; }
+  if(!currentYearly.length) return null;
+  let best = currentYearly[0], bestDist = Infinity;
+  for(const row of currentYearly){
+    const dist = Math.abs(row.year - yearEstimate);
+    if(dist < bestDist){ bestDist = dist; best = row; }
   }
   return best;
 }
@@ -351,19 +314,21 @@ function attachHoverHandlers(){
   function updateHover(clientX){
     const rect = svg.getBoundingClientRect();
     const svgX = (clientX - rect.left) / rect.width * W;
-    const yearEstimate = xMin + (svgX - PAD_L) / (W - PAD_L - PAD_R) * (xMax - xMin);
-    const clamped = Math.max(xMin, Math.min(xMax, yearEstimate));
+    const yearEstimate = yearMin + (svgX - PAD_L) / (W - PAD_L - PAD_R) * (yearMax - yearMin);
+    const clamped = Math.max(yearMin, Math.min(yearMax, yearEstimate));
     const row = nearestYear(clamped);
+    if(!row) return;
     const px = xPos(row.year);
 
     hoverLine.setAttribute('x1', px);
     hoverLine.setAttribute('x2', px);
     hoverLine.style.opacity = 1;
 
-    const visible = SERIES.filter(s => !hidden.has(s.key));
-    hoverDots.innerHTML = visible.map(s => {
-      const py = yPos(row[s.key + '_pct']);
-      return `<circle cx="${px}" cy="${py}" r="3.5" fill="${s.color}" stroke="var(--surface)" stroke-width="1.5"/>`;
+    const active = [...selectedCountries];
+    hoverDots.innerHTML = active.map(code => {
+      const pct = row.total ? (row.byCountry[code]||0) / row.total * 100 : 0;
+      const py = yPos(pct);
+      return `<circle cx="${px}" cy="${py}" r="3.5" fill="${COLOR_MAP[code]}" stroke="var(--surface)" stroke-width="1.5"/>`;
     }).join('');
 
     const cardRect = chartCard.getBoundingClientRect();
@@ -372,8 +337,11 @@ function attachHoverHandlers(){
     tooltip.style.left = tipX + 'px';
     tooltip.style.top = tipY + 'px';
     tooltip.style.opacity = 1;
-    tooltip.innerHTML = `<div class="tt-year">${seasonLabel(row.year)}</div>` +
-      visible.map(s => `<div class="tt-row"><span class="tt-swatch" style="background:${s.color}"></span>${s.label}<span class="tt-val">${row[s.key + '_pct'].toFixed(1)}%</span></div>`).join('');
+    tooltip.innerHTML = `<div class="tt-year">${seasonLabel(row.year)} &nbsp; (n=${row.total})</div>` +
+      active.map(code => {
+        const pct = row.total ? (row.byCountry[code]||0) / row.total * 100 : 0;
+        return `<div class="tt-row"><span class="tt-swatch" style="background:${COLOR_MAP[code]}"></span>${COUNTRY_META[code].name}<span class="tt-val">${pct.toFixed(1)}%</span></div>`;
+      }).join('');
   }
 
   function clearHover(){
@@ -385,6 +353,144 @@ function attachHoverHandlers(){
   overlay.addEventListener('pointermove', e => updateHover(e.clientX));
   overlay.addEventListener('pointerleave', clearHover);
 }
+
+function renderChart(){
+  const gridLines = [];
+  for(let v=0; v<=100; v+=Y_STEP){
+    const y = yPos(v);
+    gridLines.push(`<line class="chart-axis" x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}"/>`);
+    gridLines.push(`<text class="chart-axis-label" x="${PAD_L-8}" y="${y+3}" text-anchor="end">${v}%</text>`);
+  }
+  const span = yearMax - yearMin;
+  const step = span > 60 ? 20 : span > 30 ? 10 : span > 12 ? 5 : 1;
+  for(let yr = Math.ceil(yearMin/step)*step; yr <= yearMax; yr += step){
+    gridLines.push(`<text class="chart-axis-label" x="${xPos(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
+  }
+
+  if(!currentYearly.length || selectedCountries.size === 0){
+    svg.innerHTML = `${gridLines.join('')}<text x="${W/2}" y="${H/2}" text-anchor="middle" class="chart-axis-label" font-size="13">No data for this combination of filters</text>`;
+    return;
+  }
+
+  const lines = [...selectedCountries].map(code =>
+    `<path class="series-line" d="${buildPath(code)}" fill="none" stroke="${COLOR_MAP[code]}" stroke-width="2" opacity="0.9"/>`
+  ).join('');
+
+  svg.innerHTML = `
+    ${gridLines.join('')}
+    ${lines}
+    <g id="hover-dots"></g>
+    <line class="hover-line" id="hover-line" x1="0" y1="${PAD_T}" x2="0" y2="${H-PAD_B}"/>
+    <rect class="overlay" id="overlay" x="${PAD_L}" y="0" width="${W-PAD_L-PAD_R}" height="${H}"/>
+  `;
+  attachHoverHandlers();
+}
+
+// --- stat row ---
+const statRow = document.getElementById('stat-row');
+function renderStats(rows, yearly, countryTotals){
+  const totalRows = rows.length;
+  const distinctCountries = countryTotals.length;
+  const first = yearly[0], last = yearly[yearly.length-1];
+  const canShareAt = row => row && row.total ? ((row.byCountry['CAN']||0)/row.total*100) : 0;
+  const nonNA = countryTotals.filter(c => c.code !== 'CAN' && c.code !== 'USA').sort((a,b)=>b.total-a.total)[0];
+
+  const stats = [
+    {label:'Countries in Filter', value:distinctCountries, small:totalRows.toLocaleString('en-US')+' player-seasons'},
+    {label:'Canadian Share, First Year', value: first ? canShareAt(first).toFixed(0)+'%' : '—', small: first ? seasonLabel(first.year) : ''},
+    {label:'Canadian Share, Last Year', value: last ? canShareAt(last).toFixed(0)+'%' : '—', small: last ? seasonLabel(last.year) : ''},
+    {label:'Top Non-NA Country', value: nonNA ? (flagEmoji(COUNTRY_META[nonNA.code].flag)+' '+COUNTRY_META[nonNA.code].name) : '—', small: nonNA ? nonNA.total.toLocaleString('en-US')+' player-seasons' : ''},
+  ];
+  statRow.innerHTML = stats.map(s => `
+    <div class="stat">
+      <div class="label">${s.label}</div>
+      <div class="value">${s.value}<small>${s.small}</small></div>
+    </div>`).join('');
+}
+
+// --- table ---
+const tbody = document.getElementById('table-body');
+let currentTableData = [];
+let sortKey = 'total', sortDir = -1;
+
+function renderTable(){
+  const rows = [...currentTableData].sort((a,b) => {
+    const field = sortKey === 'country' ? 'name' : sortKey;
+    if(sortKey === 'country') return String(a.name).localeCompare(String(b.name)) * sortDir;
+    return ((a[field] ?? -1) - (b[field] ?? -1)) * sortDir;
+  });
+  tbody.innerHTML = rows.map(c => `
+    <tr>
+      <td>${flagEmoji(COUNTRY_META[c.code].flag)} ${c.name}</td>
+      <td>${c.total.toLocaleString('en-US')}</td>
+      <td>${c.pct.toFixed(2)}%</td>
+      <td>${seasonLabel(c.first_year)}</td>
+    </tr>`).join('');
+}
+
+document.querySelectorAll('#data-table thead th').forEach(th=>{
+  th.innerHTML += '<span class="arrow">▲</span>';
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    sortDir = (sortKey === key) ? -sortDir : 1;
+    sortKey = key;
+    document.querySelectorAll('#data-table thead th').forEach(t=>t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    th.querySelector('.arrow').textContent = sortDir === 1 ? '▲' : '▼';
+    renderTable();
+  });
+});
+
+// --- main recompute ---
+function recompute(){
+  const rows = getFilteredRows();
+  currentYearly = computeYearly(rows);
+  const countryTotals = computeCountryTotals(rows);
+  const totalAll = rows.length;
+  currentTableData = countryTotals
+    .map(c => ({...c, name: COUNTRY_META[c.code].name, pct: totalAll ? c.total/totalAll*100 : 0}))
+    .sort((a,b)=>b.total-a.total);
+
+  renderStats(rows, currentYearly, countryTotals);
+  renderChart();
+  renderTable();
+}
+
+// --- filter event wiring ---
+countriesBox.addEventListener('change', e => {
+  const cb = e.target;
+  if(!cb.matches('input[type="checkbox"]')) return;
+  const code = cb.dataset.code;
+  if(cb.checked) selectedCountries.add(code); else selectedCountries.delete(code);
+  renderChart();
+  renderStats(getFilteredRows(), currentYearly, computeCountryTotals(getFilteredRows()));
+});
+roundSelect.addEventListener('change', () => { roundFilter = roundSelect.value; recompute(); });
+teamSelect.addEventListener('change', () => { teamFilter = teamSelect.value; recompute(); });
+yearMinInput.addEventListener('change', () => {
+  yearMin = Math.max(1940, Math.min(2025, Number(yearMinInput.value) || 1940));
+  if(yearMin > yearMax) yearMin = yearMax;
+  yearMinInput.value = yearMin;
+  recompute();
+});
+yearMaxInput.addEventListener('change', () => {
+  yearMax = Math.max(1940, Math.min(2025, Number(yearMaxInput.value) || 2025));
+  if(yearMax < yearMin) yearMax = yearMin;
+  yearMaxInput.value = yearMax;
+  recompute();
+});
+document.getElementById('filter-reset').addEventListener('click', () => {
+  selectedCountries = new Set(DEFAULT_COUNTRIES);
+  roundFilter = 'all'; teamFilter = 'all'; yearMin = 1940; yearMax = 2025;
+  roundSelect.value = 'all'; teamSelect.value = 'all';
+  yearMinInput.value = 1940; yearMaxInput.value = 2025;
+  countriesBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.checked = selectedCountries.has(cb.dataset.code);
+  });
+  recompute();
+});
+
+recompute();
 
 // --- reactions (no sign-in required) ---
 const REACTION_NAMESPACE = 'nhl-fun-stats-github-io';
