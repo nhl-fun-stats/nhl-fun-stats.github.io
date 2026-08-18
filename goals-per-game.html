@@ -6,6 +6,7 @@
 <title>Average Goals Per Game by Year — NHL Fun Stats</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥅</text></svg>">
 <link rel="stylesheet" href="assets/styles.css">
+<script src="assets/stats-utils.js"></script>
 </head>
 <body>
 
@@ -141,9 +142,7 @@ const DATA = [
   .map(d => ({...d, goals_per_game: +(d.total_goals / (d.nb_teams * d.games_played / 2)).toFixed(2)}));
 
 const AVG_SINCE_1940 = DATA.reduce((sum,d) => sum + d.goals_per_game, 0) / DATA.length;
-DATA.forEach(d => { d.vs_average = +(d.goals_per_game / AVG_SINCE_1940).toFixed(2); });
-
-function seasonLabel(y){ return y + '-' + String(y+1).slice(-2); }
+DATA.forEach(d => { d.vs_average = roundTo(vsAverage(d.goals_per_game, AVG_SINCE_1940)); });
 
 // --- stat row ---
 const statRow = document.getElementById('stat-row');
