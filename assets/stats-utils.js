@@ -66,6 +66,60 @@ function applyGoalsAdjustment(rawValue, leagueGoalsPerGame, gamesPlayed, avgPlay
 }
 
 /**
+ * "Assists Factor" — the era-adjustment multiplier for a player's raw
+ * assist total, combining three normalizations:
+ *   1. Schedule: a target of 82 games. Same idea as adjustPer82, applied
+ *      to the season's scheduled game count rather than a raw value.
+ *   2. Roster size: average allowed roster size that season, divided by a
+ *      target of 18 — note this is the *inverse* shape of the roster term
+ *      in goalsAdjustmentFactor (formation/18 here, vs. 18/dressed there).
+ *      Defaults to 18 (neutral ×1) until real roster-size data exists.
+ *   3. Scoring era for assists: a target of 10.0 league-wide assists/game
+ *      (Hockey-Reference's baseline: 6.0 goals/game × 1.67 assists/goal).
+ *      We deliberately do NOT exclude the player being evaluated from the
+ *      league average — kept simple rather than matching Hockey-Reference's
+ *      per-player exclusion.
+ *
+ * @param {number} gamesScheduled       Games scheduled that season (per team).
+ * @param {number} leagueAssistsPerGame League-wide assists/game that season.
+ * @param {number} [avgRosterSize=18]   Average allowed roster size that season.
+ * @returns {number|null} The multiplier, or null if an input is falsy.
+ */
+function assistsAdjustmentFactor(gamesScheduled, leagueAssistsPerGame, avgRosterSize = 18) {
+  if (!gamesScheduled || !leagueAssistsPerGame || !avgRosterSize) return null;
+  const TARGET_GAMES = 82;
+  const TARGET_ROSTER = 18;
+  const TARGET_ASSISTS_PER_GAME = 10.0;
+  const scheduleFactor = TARGET_GAMES / gamesScheduled;
+  const formationFactor = avgRosterSize / TARGET_ROSTER;
+  const eraFactor = TARGET_ASSISTS_PER_GAME / leagueAssistsPerGame;
+  return scheduleFactor * formationFactor * eraFactor;
+}
+
+/**
+ * Apply the Assists Factor to a raw assist total.
+ * @param {number} rawAssists
+ * @param {number} gamesScheduled
+ * @param {number} leagueAssistsPerGame
+ * @param {number} [avgRosterSize=18]
+ * @returns {number|null}
+ */
+function applyAssistsAdjustment(rawAssists, gamesScheduled, leagueAssistsPerGame, avgRosterSize = 18) {
+  const factor = assistsAdjustmentFactor(gamesScheduled, leagueAssistsPerGame, avgRosterSize);
+  return factor === null ? null : rawAssists * factor;
+}
+
+/**
+ * Adjusted points = adjusted goals + adjusted assists.
+ * @param {number} adjustedGoals
+ * @param {number} adjustedAssists
+ * @returns {number}
+ */
+function adjustedPoints(adjustedGoals, adjustedAssists) {
+  return adjustedGoals + adjustedAssists;
+}
+
+/**
  * Express a value as a ratio of a baseline average — the "VS_Average"
  * pattern used across the site (e.g. a season's goals/game vs. the
  * long-run average). 1.00 = exactly average, 1.25 = 25% above.
