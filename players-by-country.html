@@ -91,16 +91,6 @@
 
         <div class="filter-group collapsed">
           <div class="filter-label">
-            <button type="button" class="filter-toggle" data-collapse-target="filter-teams" aria-expanded="false"><span class="chevron">▾</span> Team</button>
-            <span class="filter-bulk">
-              <button type="button" class="filter-bulk-btn" data-target="teams" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="teams" data-action="uncheck">Uncheck all</button>
-            </span>
-          </div>
-          <div class="filter-countries" id="filter-teams"></div>
-        </div>
-
-        <div class="filter-group collapsed">
-          <div class="filter-label">
             <button type="button" class="filter-toggle" data-collapse-target="filter-rounds" aria-expanded="false"><span class="chevron">▾</span> Draft Round</button>
             <span class="filter-bulk">
               <button type="button" class="filter-bulk-btn" data-target="rounds" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="rounds" data-action="uncheck">Uncheck all</button>
@@ -129,26 +119,40 @@
           </ul>
         </div>
 
-        <div class="card chart-card">
-          <div class="chart-header-row">
-            <h2>Share of NHL Players by Country, by Season</h2>
-            <div class="chart-mode-toggle" role="group" aria-label="Chart display mode">
-              <button type="button" class="mode-btn active" data-mode="pct">%</button>
-              <button type="button" class="mode-btn" data-mode="raw"># Players</button>
+        <div class="charts-with-team-filter">
+          <div class="charts-col">
+            <div class="card chart-card">
+              <div class="chart-header-row">
+                <h2>Share of NHL Players by Country, by Season</h2>
+                <div class="chart-mode-toggle" role="group" aria-label="Chart display mode">
+                  <button type="button" class="mode-btn active" data-mode="pct">%</button>
+                  <button type="button" class="mode-btn" data-mode="raw"># Players</button>
+                </div>
+              </div>
+              <p class="note">% of that season's qualifying players (5+ games) born in each country. Click a country in the filter panel to show/hide it. Hover the chart to inspect a season.</p>
+              <svg class="chart" id="chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
+              <div class="multi-tooltip" id="tooltip"></div>
+            </div>
+
+            <div class="card chart-card">
+              <h2>Player Origins by Club</h2>
+              <p class="note">Roster composition by club (5+ GP seasons), reflecting every filter on the left. 100% stacked. Hover a bar for the breakdown.</p>
+              <div class="team-chart-scroll">
+                <canvas id="team-chart" width="1600" height="340"></canvas>
+              </div>
+              <div class="multi-tooltip" id="team-tooltip"></div>
             </div>
           </div>
-          <p class="note">% of that season's qualifying players (5+ games) born in each country. Click a country in the filter panel to show/hide it. Hover the chart to inspect a season.</p>
-          <svg class="chart" id="chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
-          <div class="multi-tooltip" id="tooltip"></div>
-        </div>
 
-        <div class="card chart-card">
-          <h2>Player Origins by Club</h2>
-          <p class="note">Roster composition by club (5+ GP seasons), reflecting every filter on the left. 100% stacked. Hover a bar for the breakdown.</p>
-          <div class="team-chart-scroll">
-            <canvas id="team-chart" width="1600" height="340"></canvas>
-          </div>
-          <div class="multi-tooltip" id="team-tooltip"></div>
+          <aside class="filter-group team-filter-panel">
+            <div class="filter-label">
+              Team
+              <span class="filter-bulk">
+                <button type="button" class="filter-bulk-btn" data-target="teams" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="teams" data-action="uncheck">Uncheck all</button>
+              </span>
+            </div>
+            <div class="filter-countries" id="filter-teams"></div>
+          </aside>
         </div>
 
         <div class="card table-card">
