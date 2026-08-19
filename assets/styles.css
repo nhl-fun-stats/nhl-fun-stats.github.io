@@ -168,7 +168,7 @@ nav.sidebar-nav a .dot{
   display:flex;
   gap:28px;
   align-items:flex-start;
-  max-width: 1220px;
+  max-width: 1480px;
   margin: 0 auto;
 }
 .content-with-filters .page{
@@ -176,6 +176,8 @@ nav.sidebar-nav a .dot{
   min-width:0;
   margin:0;
 }
+/* Filters stay put in the viewport while the center column scrolls — they scroll
+   internally (own scrollbar) only if their own content is taller than the viewport. */
 .filters-panel{
   width:220px;
   flex-shrink:0;
@@ -184,7 +186,11 @@ nav.sidebar-nav a .dot{
   gap:18px;
   position:sticky;
   top:24px;
+  max-height: calc(100vh - 48px);
+  overflow-y:auto;
+  padding-right:2px;
 }
+.filters-panel-right{ width:240px; }
 .filter-group{
   display:flex;
   flex-direction:column;
@@ -304,7 +310,15 @@ nav.sidebar-nav a .dot{
 
 @media (max-width: 1000px){
   .content-with-filters{ flex-direction:column; }
-  .filters-panel{ width:100%; position:relative; top:0; }
+  .filters-panel{
+    width:100%;
+    position:relative;
+    top:0;
+    max-height:none;
+    overflow-y:visible;
+    padding-right:0;
+  }
+  .filters-panel-right{ width:100%; }
   .filter-countries{ max-height:180px; }
 }
 
@@ -410,29 +424,6 @@ h1{
 .chart-card{
   padding:20px 20px 12px;
   position:relative;
-}
-
-.charts-with-team-filter{
-  display:flex;
-  align-items:flex-start;
-  gap:20px;
-}
-.charts-col{
-  flex:1;
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  gap:32px;
-}
-.team-filter-panel{
-  width:220px;
-  flex-shrink:0;
-  position:sticky;
-  top:24px;
-}
-@media (max-width: 1000px){
-  .charts-with-team-filter{ flex-direction:column; }
-  .team-filter-panel{ width:100%; position:relative; top:0; }
 }
 .chart-card h2{
   font-size:15px;

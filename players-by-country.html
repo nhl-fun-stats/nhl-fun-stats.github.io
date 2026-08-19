@@ -70,25 +70,6 @@
           <div class="filter-countries" id="filter-positions"></div>
         </div>
 
-        <div class="filter-group">
-          <div class="filter-label">Year Range</div>
-          <div class="filter-year-range">
-            <input type="number" id="filter-year-min" min="1940" max="2025" value="1940">
-            <span>–</span>
-            <input type="number" id="filter-year-max" min="1940" max="2025" value="2025">
-          </div>
-        </div>
-
-        <div class="filter-group">
-          <label class="filter-label" for="filter-min-games">Min. Career Games</label>
-          <input type="number" id="filter-min-games" class="filter-select" min="0" step="1" value="0" placeholder="0">
-        </div>
-
-        <div class="filter-group">
-          <label class="filter-label" for="filter-min-pts">Min. Career Points</label>
-          <input type="number" id="filter-min-pts" class="filter-select" min="0" step="1" value="0" placeholder="0">
-        </div>
-
         <div class="filter-group collapsed">
           <div class="filter-label">
             <button type="button" class="filter-toggle" data-collapse-target="filter-rounds" aria-expanded="false"><span class="chevron">▾</span> Draft Round</button>
@@ -119,45 +100,31 @@
           </ul>
         </div>
 
-        <div class="charts-with-team-filter">
-          <div class="charts-col">
-            <div class="card chart-card">
-              <div class="chart-header-row">
-                <h2>Share of NHL Players by Country, by Season</h2>
-                <div class="chart-mode-toggle" role="group" aria-label="Chart display mode">
-                  <button type="button" class="mode-btn active" data-mode="pct">%</button>
-                  <button type="button" class="mode-btn" data-mode="raw"># Players</button>
-                </div>
-              </div>
-              <p class="note">% of that season's qualifying players (5+ games) born in each country. Click a country in the filter panel to show/hide it. Hover the chart to inspect a season.</p>
-              <svg class="chart" id="chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
-              <div class="multi-tooltip" id="tooltip"></div>
-            </div>
-
-            <div class="card chart-card">
-              <h2>Player Origins by Club</h2>
-              <p class="note">Roster composition by club (5+ GP seasons), reflecting every filter on the left. 100% stacked. Hover a bar for the breakdown.</p>
-              <div class="team-chart-scroll">
-                <canvas id="team-chart" width="1600" height="340"></canvas>
-              </div>
-              <div class="multi-tooltip" id="team-tooltip"></div>
+        <div class="card chart-card">
+          <div class="chart-header-row">
+            <h2>Share of NHL Players by Country, by Season</h2>
+            <div class="chart-mode-toggle" role="group" aria-label="Chart display mode">
+              <button type="button" class="mode-btn active" data-mode="pct">%</button>
+              <button type="button" class="mode-btn" data-mode="raw"># Players</button>
             </div>
           </div>
+          <p class="note">% of that season's qualifying players (5+ games) born in each country. Click a country in the filter panel to show/hide it. Hover the chart to inspect a season.</p>
+          <svg class="chart" id="chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
+          <div class="multi-tooltip" id="tooltip"></div>
+        </div>
 
-          <aside class="filter-group team-filter-panel">
-            <div class="filter-label">
-              Team
-              <span class="filter-bulk">
-                <button type="button" class="filter-bulk-btn" data-target="teams" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="teams" data-action="uncheck">Uncheck all</button>
-              </span>
-            </div>
-            <div class="filter-countries" id="filter-teams"></div>
-          </aside>
+        <div class="card chart-card">
+          <h2>Player Origins by Club</h2>
+          <p class="note">Roster composition by club (5+ GP seasons), reflecting every filter on the sides. 100% stacked. Hover a bar for the breakdown.</p>
+          <div class="team-chart-scroll">
+            <canvas id="team-chart" width="1600" height="340"></canvas>
+          </div>
+          <div class="multi-tooltip" id="team-tooltip"></div>
         </div>
 
         <div class="card table-card">
           <h2>Countries in the Current Filter</h2>
-          <p class="note">Click a header to sort. Reflects whatever filters are active on the left.</p>
+          <p class="note">Click a header to sort. Reflects whatever filters are active.</p>
           <div class="table-scroll">
             <table id="data-table">
               <thead>
@@ -175,6 +142,20 @@
               <tbody id="table-body"></tbody>
             </table>
           </div>
+        </div>
+
+        <div class="card chart-card">
+          <h2>Positions by Country Origin</h2>
+          <p class="note">Forward / Defense / Goalie mix of each country's player-seasons (5+ GP), reflecting every filter. 100% stacked. Hover a bar for the breakdown.</p>
+          <div class="chart-legend">
+            <span class="legend-chip"><span class="swatch" style="background:#2e8b57"></span>Forward</span>
+            <span class="legend-chip"><span class="swatch" style="background:#d97706"></span>Defense</span>
+            <span class="legend-chip"><span class="swatch" style="background:#7b4fa3"></span>Goalie</span>
+          </div>
+          <div class="team-chart-scroll">
+            <canvas id="position-country-chart" width="1600" height="340"></canvas>
+          </div>
+          <div class="multi-tooltip" id="position-tooltip"></div>
         </div>
 
         <div class="card comments-card">
@@ -213,6 +194,37 @@
           <div class="page-views"><img src="https://hits.sh/nhl-fun-stats.github.io/players-by-country.html.svg?style=flat-square&label=page%20views&color=1d6fa5" alt="page views"></div>
         </footer>
       </div>
+
+      <aside class="filters-panel filters-panel-right">
+        <div class="filter-group">
+          <div class="filter-label">Year Range</div>
+          <div class="filter-year-range">
+            <input type="number" id="filter-year-min" min="1940" max="2025" value="1940">
+            <span>–</span>
+            <input type="number" id="filter-year-max" min="1940" max="2025" value="2025">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="filter-min-games">Min. Career Games</label>
+          <input type="number" id="filter-min-games" class="filter-select" min="0" step="1" value="0" placeholder="0">
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label" for="filter-min-pts">Min. Career Points</label>
+          <input type="number" id="filter-min-pts" class="filter-select" min="0" step="1" value="0" placeholder="0">
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-label">
+            Team
+            <span class="filter-bulk">
+              <button type="button" class="filter-bulk-btn" data-target="teams" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="teams" data-action="uncheck">Uncheck all</button>
+            </span>
+          </div>
+          <div class="filter-countries" id="filter-teams"></div>
+        </div>
+      </aside>
     </div>
   </main>
 </div>
@@ -728,6 +740,116 @@ function attachTeamChartHover(){
 }
 attachTeamChartHover();
 
+// --- position composition by country (canvas, 100% stacked) ---
+const POSITION_COLORS = { F:'#2e8b57', D:'#d97706', G:'#7b4fa3' };
+const POSITION_LABELS = { F:'Forward', D:'Defense', G:'Goalie' };
+const POSITION_ORDER = ['F','D','G'];
+
+let positionChartBars = [];
+
+function renderPositionCountryChart(){
+  const canvas = document.getElementById('position-country-chart');
+  const ctx = canvas.getContext('2d');
+  const rows = getFilteredRows();
+
+  const byCountry = new Map();
+  rows.forEach(([, , country, , , , , , , , posGroup]) => {
+    if(!byCountry.has(country)) byCountry.set(country, {total:0, F:0, D:0, G:0});
+    const c = byCountry.get(country);
+    c.total++;
+    if(posGroup && c[posGroup] !== undefined) c[posGroup]++;
+  });
+
+  const countries = [...byCountry.entries()].sort((a,b) => b[1].total - a[1].total).map(([code]) => code);
+
+  const PAD_L = 40, PAD_R = 10, PAD_T = 10, PAD_B = 74;
+  const W = canvas.parentElement.clientWidth;
+  const SLOT = (W - PAD_L - PAD_R) / Math.max(1, countries.length);
+  const BAR_W = Math.max(2, SLOT * 0.7);
+  const H = 340;
+  canvas.width = W;
+  canvas.height = H;
+  const plotH = H - PAD_T - PAD_B;
+
+  ctx.clearRect(0,0,W,H);
+  const styles = getComputedStyle(document.documentElement);
+  const borderColor = styles.getPropertyValue('--border').trim();
+  const mutedColor = styles.getPropertyValue('--text-muted').trim();
+
+  ctx.strokeStyle = borderColor;
+  ctx.fillStyle = mutedColor;
+  ctx.font = '10px ui-monospace, monospace';
+  ctx.lineWidth = 1;
+  [0,20,40,60,80,100].forEach(v => {
+    const y = PAD_T + plotH - (v/100)*plotH;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, y+0.5);
+    ctx.lineTo(W-PAD_R, y+0.5);
+    ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(v+'%', PAD_L-8, y);
+  });
+
+  positionChartBars = [];
+
+  countries.forEach((code, i) => {
+    const c = byCountry.get(code);
+    const x = PAD_L + i*SLOT + (SLOT-BAR_W)/2;
+    let yCursor = PAD_T + plotH;
+    const segments = [];
+
+    POSITION_ORDER.forEach(pos => {
+      const n = c[pos] || 0;
+      const frac = c.total ? n / c.total : 0;
+      const segH = frac * plotH;
+      const yTop = yCursor - segH;
+      ctx.fillStyle = POSITION_COLORS[pos];
+      ctx.fillRect(x, yTop, BAR_W, segH);
+      segments.push({pos, name: POSITION_LABELS[pos], n, pct: frac*100, color: POSITION_COLORS[pos]});
+      yCursor = yTop;
+    });
+
+    positionChartBars.push({ code, x, w: BAR_W, total: c.total, segments });
+
+    // x-axis label, rotated near-vertical so narrow slots don't overlap
+    ctx.save();
+    ctx.translate(x + BAR_W/2, PAD_T + plotH + 6);
+    ctx.rotate(-Math.PI/2.2);
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = mutedColor;
+    ctx.font = '9px ui-monospace, monospace';
+    ctx.fillText(code, 0, 0);
+    ctx.restore();
+  });
+}
+
+function attachPositionChartHover(){
+  const canvas = document.getElementById('position-country-chart');
+  const tooltip = document.getElementById('position-tooltip');
+  const card = canvas.closest('.chart-card');
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const bar = positionChartBars.find(b => mx >= b.x && mx <= b.x + b.w);
+    if(!bar){ tooltip.style.opacity = 0; return; }
+
+    const cardRect = card.getBoundingClientRect();
+    tooltip.style.left = (rect.left - cardRect.left + (bar.x + bar.w/2) / scaleX) + 'px';
+    tooltip.style.top = (rect.top - cardRect.top + (e.clientY - rect.top) - 10) + 'px';
+    tooltip.style.opacity = 1;
+    tooltip.innerHTML = `<div class="tt-year">${flagEmoji(COUNTRY_META[bar.code].flag)} ${COUNTRY_META[bar.code].name} &nbsp; (n=${bar.total})</div>` +
+      bar.segments.filter(s => s.n > 0).map(s =>
+        `<div class="tt-row"><span class="tt-swatch" style="background:${s.color}"></span>${s.name}<span class="tt-val">${s.pct.toFixed(1)}%</span></div>`
+      ).join('');
+  });
+  canvas.addEventListener('mouseleave', () => { tooltip.style.opacity = 0; });
+}
+attachPositionChartHover();
+
 // --- main recompute ---
 function recompute(){
   const rows = getFilteredRows();
@@ -757,6 +879,7 @@ function recompute(){
   renderChart();
   renderTable();
   renderTeamChart();
+  renderPositionCountryChart();
 }
 
 // --- filter event wiring ---
