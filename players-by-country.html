@@ -293,7 +293,8 @@ countriesBox.innerHTML = orderedCountries.map(code => `
   <label class="filter-checkbox">
     <input type="checkbox" data-code="${code}" ${selectedCountries.has(code) ? 'checked' : ''}>
     <span class="swatch" style="background:${COLOR_MAP[code]}"></span>
-    ${flagEmoji(COUNTRY_META[code].flag)} ${COUNTRY_META[code].name}
+    <span class="fc-label">${flagEmoji(COUNTRY_META[code].flag)} ${COUNTRY_META[code].name}</span>
+    <button type="button" class="only-btn" data-only-code="${code}">Only</button>
   </label>`).join('');
 
 const roundsBox = document.getElementById('filter-rounds');
@@ -301,21 +302,24 @@ function roundLabel(r){ return r === 'undrafted' ? 'Undrafted' : r === '10+' ? '
 roundsBox.innerHTML = ROUND_OPTIONS.map(r => `
   <label class="filter-checkbox">
     <input type="checkbox" data-round="${r}" checked>
-    ${roundLabel(r)}
+    <span class="fc-label">${roundLabel(r)}</span>
+    <button type="button" class="only-btn" data-only-round="${r}">Only</button>
   </label>`).join('');
 
 const positionsBox = document.getElementById('filter-positions');
 positionsBox.innerHTML = POSITION_OPTIONS.map(p => `
   <label class="filter-checkbox">
     <input type="checkbox" data-pos="${p.key}" checked>
-    ${p.label}
+    <span class="fc-label">${p.label}</span>
+    <button type="button" class="only-btn" data-only-pos="${p.key}">Only</button>
   </label>`).join('');
 
 const teamsBox = document.getElementById('filter-teams');
 teamsBox.innerHTML = teamIds.map(t => `
   <label class="filter-checkbox">
     <input type="checkbox" data-team="${t}" checked>
-    ${TEAM_NAMES[t] || ('Team ' + t)}
+    <span class="fc-label">${TEAM_NAMES[t] || ('Team ' + t)}</span>
+    <button type="button" class="only-btn" data-only-team="${t}">Only</button>
   </label>`).join('');
 
 const yearMinInput = document.getElementById('filter-year-min');
@@ -893,11 +897,34 @@ countriesBox.addEventListener('change', e => {
   renderStats(getFilteredRows(), currentYearly, computeCountryTotals(getFilteredRows()));
   renderTeamChart();
 });
+countriesBox.addEventListener('click', e => {
+  const btn = e.target.closest('.only-btn');
+  if(!btn) return;
+  const code = btn.dataset.onlyCode;
+  selectedCountries = new Set([code]);
+  countriesBox.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = cb.dataset.code === code; });
+  highlightedCountry = null;
+  renderChart();
+  renderStats(getFilteredRows(), currentYearly, computeCountryTotals(getFilteredRows()));
+  renderTeamChart();
+});
 roundsBox.addEventListener('change', e => {
   const cb = e.target;
   if(!cb.matches('input[type="checkbox"]')) return;
   const key = cb.dataset.round === 'undrafted' || cb.dataset.round === '10+' ? cb.dataset.round : Number(cb.dataset.round);
   if(cb.checked) selectedRounds.add(key); else selectedRounds.delete(key);
+  recompute();
+});
+roundsBox.addEventListener('click', e => {
+  const btn = e.target.closest('.only-btn');
+  if(!btn) return;
+  const raw = btn.dataset.onlyRound;
+  const key = raw === 'undrafted' || raw === '10+' ? raw : Number(raw);
+  selectedRounds = new Set([key]);
+  roundsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    const cbKey = cb.dataset.round === 'undrafted' || cb.dataset.round === '10+' ? cb.dataset.round : Number(cb.dataset.round);
+    cb.checked = cbKey === key;
+  });
   recompute();
 });
 teamsBox.addEventListener('change', e => {
@@ -907,11 +934,27 @@ teamsBox.addEventListener('change', e => {
   if(cb.checked) selectedTeams.add(id); else selectedTeams.delete(id);
   recompute();
 });
+teamsBox.addEventListener('click', e => {
+  const btn = e.target.closest('.only-btn');
+  if(!btn) return;
+  const id = Number(btn.dataset.onlyTeam);
+  selectedTeams = new Set([id]);
+  teamsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = Number(cb.dataset.team) === id; });
+  recompute();
+});
 positionsBox.addEventListener('change', e => {
   const cb = e.target;
   if(!cb.matches('input[type="checkbox"]')) return;
   const key = cb.dataset.pos;
   if(cb.checked) selectedPositions.add(key); else selectedPositions.delete(key);
+  recompute();
+});
+positionsBox.addEventListener('click', e => {
+  const btn = e.target.closest('.only-btn');
+  if(!btn) return;
+  const key = btn.dataset.onlyPos;
+  selectedPositions = new Set([key]);
+  positionsBox.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = cb.dataset.pos === key; });
   recompute();
 });
 yearMinInput.addEventListener('change', () => {

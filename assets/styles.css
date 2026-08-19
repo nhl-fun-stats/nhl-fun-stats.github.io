@@ -272,6 +272,29 @@ nav.sidebar-nav a .dot{
 }
 .filter-checkbox input{ accent-color:var(--accent); width:14px; height:14px; cursor:pointer; flex-shrink:0; }
 .filter-checkbox .swatch{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.fc-label{
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.only-btn{
+  flex-shrink:0;
+  margin-left:auto;
+  background:none;
+  border:none;
+  color:var(--text-muted);
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  cursor:pointer;
+  padding:2px 5px;
+  border-radius:4px;
+  font-family:inherit;
+}
+.only-btn:hover{ color:var(--accent); background:var(--surface-alt); }
 .filter-select{
   width:100%;
   padding:9px 10px;
