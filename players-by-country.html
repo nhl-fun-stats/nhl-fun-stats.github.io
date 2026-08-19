@@ -57,7 +57,7 @@
       <aside class="filters-panel">
         <div class="filter-group">
           <div class="filter-label">
-            Countries
+            <button type="button" class="filter-toggle" data-collapse-target="filter-countries" aria-expanded="true"><span class="chevron">▾</span> Countries</button>
             <span class="filter-bulk">
               <button type="button" class="filter-bulk-btn" data-target="countries" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="countries" data-action="uncheck">Uncheck all</button>
             </span>
@@ -66,28 +66,8 @@
         </div>
 
         <div class="filter-group">
-          <div class="filter-label">
-            Team
-            <span class="filter-bulk">
-              <button type="button" class="filter-bulk-btn" data-target="teams" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="teams" data-action="uncheck">Uncheck all</button>
-            </span>
-          </div>
-          <div class="filter-countries" id="filter-teams"></div>
-        </div>
-
-        <div class="filter-group">
           <div class="filter-label">Position</div>
           <div class="filter-countries" id="filter-positions"></div>
-        </div>
-
-        <div class="filter-group">
-          <div class="filter-label">
-            Draft Round
-            <span class="filter-bulk">
-              <button type="button" class="filter-bulk-btn" data-target="rounds" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="rounds" data-action="uncheck">Uncheck all</button>
-            </span>
-          </div>
-          <div class="filter-countries" id="filter-rounds"></div>
         </div>
 
         <div class="filter-group">
@@ -107,6 +87,26 @@
         <div class="filter-group">
           <label class="filter-label" for="filter-min-pts">Min. Career Points</label>
           <input type="number" id="filter-min-pts" class="filter-select" min="0" step="1" value="0" placeholder="0">
+        </div>
+
+        <div class="filter-group collapsed">
+          <div class="filter-label">
+            <button type="button" class="filter-toggle" data-collapse-target="filter-teams" aria-expanded="false"><span class="chevron">▾</span> Team</button>
+            <span class="filter-bulk">
+              <button type="button" class="filter-bulk-btn" data-target="teams" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="teams" data-action="uncheck">Uncheck all</button>
+            </span>
+          </div>
+          <div class="filter-countries" id="filter-teams"></div>
+        </div>
+
+        <div class="filter-group collapsed">
+          <div class="filter-label">
+            <button type="button" class="filter-toggle" data-collapse-target="filter-rounds" aria-expanded="false"><span class="chevron">▾</span> Draft Round</button>
+            <span class="filter-bulk">
+              <button type="button" class="filter-bulk-btn" data-target="rounds" data-action="check">Check all</button> / <button type="button" class="filter-bulk-btn" data-target="rounds" data-action="uncheck">Uncheck all</button>
+            </span>
+          </div>
+          <div class="filter-countries" id="filter-rounds"></div>
         </div>
 
         <button class="filter-reset" id="filter-reset">Reset all filters</button>
@@ -130,7 +130,13 @@
         </div>
 
         <div class="card chart-card">
-          <h2>Share of NHL Players by Country, by Season</h2>
+          <div class="chart-header-row">
+            <h2>Share of NHL Players by Country, by Season</h2>
+            <div class="chart-mode-toggle" role="group" aria-label="Chart display mode">
+              <button type="button" class="mode-btn active" data-mode="pct">%</button>
+              <button type="button" class="mode-btn" data-mode="raw"># Players</button>
+            </div>
+          </div>
           <p class="note">% of that season's qualifying players (5+ games) born in each country. Click a country in the filter panel to show/hide it. Hover the chart to inspect a season.</p>
           <svg class="chart" id="chart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
           <div class="multi-tooltip" id="tooltip"></div>
@@ -361,6 +367,16 @@ let currentYearly = [];
 let highlightedCountry = null;
 let currentYMax = 100;
 let currentYStep = 20;
+let chartMode = 'pct'; // 'pct' or 'raw'
+
+// value for one country in one season, in whatever unit the chart is currently showing
+function seriesValue(row, code){
+  const n = row.byCountry[code] || 0;
+  return chartMode === 'pct' ? (row.total ? n / row.total * 100 : 0) : n;
+}
+function formatSeriesValue(v){
+  return chartMode === 'pct' ? v.toFixed(1) + '%' : Math.round(v).toLocaleString('en-US');
+}
 
 // Auto-zoom the Y axis to whatever the selected lines actually reach, instead of
 // always spanning the full 0-100% — a country maxing out at 40% otherwise gets
@@ -369,18 +385,24 @@ function computeYAxisRange(){
   let maxVal = 0;
   currentYearly.forEach(row => {
     selectedCountries.forEach(code => {
-      const pct = row.total ? (row.byCountry[code]||0) / row.total * 100 : 0;
-      if(pct > maxVal) maxVal = pct;
+      const v = seriesValue(row, code);
+      if(v > maxVal) maxVal = v;
     });
   });
-  if(maxVal <= 0){ currentYMax = 20; currentYStep = 5; return; }
+  const niceSteps = chartMode === 'pct'
+    ? [1,2,5,10,20,25,50]
+    : [1,2,5,10,20,25,50,100,200,250,500,1000,2000,2500,5000,10000];
+  if(maxVal <= 0){
+    currentYMax = chartMode === 'pct' ? 20 : niceSteps[0]*5;
+    currentYStep = niceSteps[0];
+    return;
+  }
   const padded = maxVal * 1.15;
-  const niceSteps = [1,2,5,10,20,25,50];
   let step = niceSteps[niceSteps.length-1];
   for(const s of niceSteps){
     if(padded / s <= 6){ step = s; break; }
   }
-  currentYMax = Math.min(100, Math.ceil(padded / step) * step);
+  currentYMax = chartMode === 'pct' ? Math.min(100, Math.ceil(padded / step) * step) : Math.ceil(padded / step) * step;
   currentYStep = step;
 }
 
@@ -407,8 +429,7 @@ function smoothPath(points){
 
 function buildPath(code){
   const points = currentYearly.map(row => {
-    const pct = row.total ? (row.byCountry[code]||0) / row.total * 100 : 0;
-    return { x: xPos(row.year), y: yPos(pct) };
+    return { x: xPos(row.year), y: yPos(seriesValue(row, code)) };
   });
   return smoothPath(points);
 }
@@ -444,8 +465,7 @@ function attachHoverHandlers(){
 
     const active = [...selectedCountries];
     hoverDots.innerHTML = active.map(code => {
-      const pct = row.total ? (row.byCountry[code]||0) / row.total * 100 : 0;
-      const py = yPos(pct);
+      const py = yPos(seriesValue(row, code));
       return `<circle cx="${px}" cy="${py}" r="3.5" fill="${COLOR_MAP[code]}" stroke="var(--surface)" stroke-width="1.5"/>`;
     }).join('');
 
@@ -457,8 +477,7 @@ function attachHoverHandlers(){
     tooltip.style.opacity = 1;
     tooltip.innerHTML = `<div class="tt-year">${seasonLabel(row.year)} &nbsp; (n=${row.total})</div>` +
       active.map(code => {
-        const pct = row.total ? (row.byCountry[code]||0) / row.total * 100 : 0;
-        return `<div class="tt-row"><span class="tt-swatch" style="background:${COLOR_MAP[code]}"></span>${COUNTRY_META[code].name}<span class="tt-val">${pct.toFixed(1)}%</span></div>`;
+        return `<div class="tt-row"><span class="tt-swatch" style="background:${COLOR_MAP[code]}"></span>${COUNTRY_META[code].name}<span class="tt-val">${formatSeriesValue(seriesValue(row, code))}</span></div>`;
       }).join('');
   }
 
@@ -478,8 +497,7 @@ function attachHoverHandlers(){
     if(!row) return;
     let closest = null, bestDist = Infinity;
     selectedCountries.forEach(code => {
-      const pct = row.total ? (row.byCountry[code]||0)/row.total*100 : 0;
-      const dist = Math.abs(yPos(pct) - svgY);
+      const dist = Math.abs(yPos(seriesValue(row, code)) - svgY);
       if(dist < bestDist){ bestDist = dist; closest = code; }
     });
     if(closest){
@@ -499,7 +517,8 @@ function renderChart(){
   for(let v=0; v<=currentYMax + 0.001; v+=currentYStep){
     const y = yPos(v);
     gridLines.push(`<line class="chart-axis" x1="${PAD_L}" y1="${y}" x2="${W-PAD_R}" y2="${y}"/>`);
-    gridLines.push(`<text class="chart-axis-label" x="${PAD_L-8}" y="${y+3}" text-anchor="end">${Math.round(v)}%</text>`);
+    const label = chartMode === 'pct' ? Math.round(v) + '%' : Math.round(v).toLocaleString('en-US');
+    gridLines.push(`<text class="chart-axis-label" x="${PAD_L-8}" y="${y+3}" text-anchor="end">${label}</text>`);
   }
   const span = yearMax - yearMin;
   const step = span > 60 ? 20 : span > 30 ? 10 : span > 12 ? 5 : 1;
@@ -568,8 +587,8 @@ function renderTable(){
       <td>${c.pct.toFixed(2)}%</td>
       <td>${c.pctPlayers.toFixed(2)}%</td>
       <td>${c.pctGames.toFixed(2)}%</td>
-      <td>${c.pctGoals.toFixed(2)}%</td>
-      <td>${c.pctPoints.toFixed(2)}%</td>
+      <td>${c.pctGoals == null ? '—' : c.pctGoals.toFixed(2)+'%'}</td>
+      <td>${c.pctPoints == null ? '—' : c.pctPoints.toFixed(2)+'%'}</td>
       <td>${seasonLabel(c.first_year)}</td>
     </tr>`).join('');
 }
@@ -715,6 +734,9 @@ function recompute(){
   const grandGames = countryTotals.reduce((s,c)=>s+c.games, 0);
   const grandGoals = countryTotals.reduce((s,c)=>s+c.goals, 0);
   const grandPoints = countryTotals.reduce((s,c)=>s+c.points, 0);
+  // With only Goalie selected, goals/points are essentially noise (goalies almost never score) —
+  // show them as N/A rather than a misleading percentage.
+  const goaliesOnly = selectedPositions.size === 1 && selectedPositions.has('G');
   currentTableData = countryTotals
     .map(c => ({
       ...c,
@@ -722,8 +744,8 @@ function recompute(){
       pct: totalAll ? c.total/totalAll*100 : 0,
       pctPlayers: grandPlayers ? c.playerCount/grandPlayers*100 : 0,
       pctGames: grandGames ? c.games/grandGames*100 : 0,
-      pctGoals: grandGoals ? c.goals/grandGoals*100 : 0,
-      pctPoints: grandPoints ? c.points/grandPoints*100 : 0,
+      pctGoals: goaliesOnly ? null : (grandGoals ? c.goals/grandGoals*100 : 0),
+      pctPoints: goaliesOnly ? null : (grandPoints ? c.points/grandPoints*100 : 0),
     }))
     .sort((a,b)=>b.total-a.total);
 
@@ -786,6 +808,23 @@ minPtsInput.addEventListener('change', () => {
   minCareerPoints = Math.max(0, Number(minPtsInput.value) || 0);
   minPtsInput.value = minCareerPoints;
   recompute();
+});
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if(btn.dataset.mode === chartMode) return;
+    chartMode = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+    renderChart();
+  });
+});
+
+document.querySelectorAll('.filter-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const group = btn.closest('.filter-group');
+    const collapsed = group.classList.toggle('collapsed');
+    btn.setAttribute('aria-expanded', String(!collapsed));
+  });
 });
 
 document.querySelectorAll('.filter-bulk-btn').forEach(btn => {
